@@ -25,7 +25,7 @@
 //=============================================================================================
 
 // Baud-rate for GPS
-#define BAUD 9600
+#define BAUD 115200
 
 // Current-sensor
 #define offset_ 0
@@ -168,7 +168,7 @@
   #define timer_line 210
   #define gps_nmea_line 15
   #define summaryline 100
-  #define current_calc_line 260
+  #define current_calc_line 240
 #endif
 
 // Arduino

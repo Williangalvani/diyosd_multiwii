@@ -12,11 +12,10 @@
 #include <math.h>
 
 
-
 unsigned char Buttonpin = Buttonpin_;
 
 // Buffer for GPS string
-char GPSbuffer[100] = {0};
+//char GPSbuffer[100] = {0};
 
 int iiii = 0;
 
@@ -34,12 +33,12 @@ int homeposcount = 0;
 char GPSfix = '0';
 
 // Used to store all the GPS positions etc...
-long lat1 = 0;
-long lat2 = 0;
+//long lat1 = 0;
+//long lat2 = 0;
 long lats = 0;
 
-long lon1 = 0;
-long lon2 = 2;
+//long lon1 = 0;
+//long lon2 = 2;
 long lons = 0;
 
 // Used to calculate line of sight.
@@ -49,7 +48,7 @@ long losx = 0;
 // Variables to store home position:
 long lathome = 0;
 long lonhome = 0;
-long los = 0;
+long los = 1234;
 
 // Direction home:
 int homehead = 0;
@@ -57,8 +56,7 @@ int homehead_r[3] = {96, 96, 96};
 int headi = 0;
 int arrow = 0;
 int arrowd;
-unsigned char satellites[3] = {3, 3, 3};
-unsigned char satellitesr[3] = {3, 3, 3};
+
 
 unsigned char latitude_dir = 0;
 unsigned char longitude_dir = 0;
@@ -130,7 +128,7 @@ unsigned int speedkm = 0;
 unsigned int speedkm2 = 0;
 int latitude[15] = {0};
 int longitude[15] = {0};
-int head[10] = {0};
+
 unsigned char altitude[10] = {1, 1, 1, 1, 1, 1};
 unsigned char altitude2[10] = {1, 1, 1, 1, 1, 1};
 unsigned char altituder[10] = {1, 1, 1, 1, 1, 1, 1, 1};
@@ -183,8 +181,9 @@ int current_num = 0;
 unsigned int mahkm = 0;
 unsigned char mahkmr[] = {3, 3, 3, 3, 3, 3};
 
+// Stores current characters (numbers) written to screen
 
-
+/*
 void update_menu()
 {
     if (CONTROLLER == 1 | Usebutton == 1)
@@ -415,613 +414,378 @@ void update_menu()
         }
     }
 }
+*/
 
-
-void do_serial_communication()
+void update_gps_data()
 {
     SPDR = 0b00000000;
-    if (UCSR0A & (1 << RXC0))
+
+    //===================================================
+
+    // This is used to set homeposition.
+    if (homepos == 0)
     {
-        GPSbuffer[bufnr] = UDR0;
-
-        bufnr++;
-
-        // This code is not very efficient, but as it will only be executed 1-10
-        // times a second (1-10 hz update rate from GPS) it's not as critical as the video-timing.
-
-        // The major problem by doing it this way is, that the text-string has to be
-        // "analyzed" before the next character is received.
-
-        // If the last character is 13 = carriage return, an entire line has been received.
-        if (GPSbuffer[bufnr - 1] == 13)
+        // If we have GPS-fix;
+        if (GPSfix > '0')
         {
-
-            // Check if it's the GPRMC-string that has been received;
-            // If it's the GPRMC-string, the characher at index 4 = R
-
-
-            // ====================================================================================
-            // Second GPS String
-            // ====================================================================================
-
-            if (GPSbuffer[4] == 'R')
+            homeposcount++;
+            if (homeposcount > set_home_delay)
             {
-
-                // Resets the speed to avoid "hanging numbers".
-                speedkn[0] = 14;
-                speedkn[1] = 14;
-                speedkn[2] = 14;
-                speedkn[3] = 14;
-                speedkn[4] = 14;
-
-                // Goes through every character in the line. As the GPS-data is ","-seperated
-                // we can look for the "," and find the data needed.
-                for (int i = 0; i < bufnr; i++)
-                {
-                    if (GPSbuffer[i] == ',')
-                    {
-                        n = 0;
-                        count++;
-                    }
-
-                    else
-                    {
-                        switch (count)
-                        {
-
-                        case 0: break;
-
-                        case 1:
-                            time[n] = GPSbuffer[i] - 45;
-                            break;
-
-                        case 2: break;
-
-                        case 3:
-                            latitude[n] = GPSbuffer[i];
-                            break;
-
-                        case 4:
-                            latitude_dir = GPSbuffer[i];
-                            break;
-
-                        case 5:
-                            longitude[n] = GPSbuffer[i];
-                            break;
-
-                        case 6:
-                            longitude_dir = GPSbuffer[i];
-                            break;
-
-                        case 7:
-                            speedkn[n] = GPSbuffer[i] - 45;
-                            break;
-
-                        case 8:
-                            head[n] = GPSbuffer[i];
-                            break;
-
-                        default: break;
-
-                        }
-                        // Don't need more data efter the 9. "," - so we will just break.
-                        if (count == 9)
-                        {
-                            break;
-                        }
-
-                        n++;
-                    }
-                }
-
-                speedkn2[0] = speedkn[0];
-                speedkn2[1] = speedkn[1];
-                speedkn2[2] = speedkn[2];
-                speedkn2[3] = speedkn[3];
-                speedkn2[4] = speedkn[4];
-
-
-                // So, when this last string has been received we got "plenty of time" to do some math....
-                // okay, at 9600 baud rate the 2 strings takes around 80 % of the bandwidth (5 hz update rate),
-                // but at least it gives us around 0,04 seconds.
-
-                // If you need the micro-controller for further calculations you might want to
-                // improve this code a bit.
-
-
-
-                //===================================================
-                // GPS coordinates
-                //===================================================
-                // Coordinates from MKT is like; 5559.5395
-                // 55 as degrees and 59 as minutes (or something that ends with 60 ;)) and 5395 as "normal number/decimal system"
-
-
-                lat1 =
-                    (latitude[8] - 48) +
-                    (latitude[7] - 48) * 10 +
-                    (latitude[6] - 48) * 100 +
-                    (latitude[5] - 48) * 1000;
-
-                // Degrees.
-                lat2 =
-                    (latitude[3] - 48) +
-                    (latitude[2] - 48) * 10 +
-                    (latitude[1] - 48) * 60 +
-                    (latitude[0] - 48) * 600;
-
-                lats = lat1 + (lat2 * 10000);
-
-                lon1 =
-                    (longitude[9] - 48) +
-                    (longitude[8] - 48) * 10 +
-                    (longitude[7] - 48) * 100 +
-                    (longitude[6] - 48) * 1000;
-
-                lon2 =
-                    (longitude[4] - 48) +
-                    (longitude[3] - 48) * 10 +
-                    (longitude[2] - 48) * 60 +
-                    (longitude[1] - 48) * 600 +
-                    (longitude[0] - 48) * 6000;
-
-                lons = lon1 + (lon2 * 10000);
-
-                //===================================================
-                // End of GPS coordinates
-                //===================================================
-
-
-
-                //===================================================
-                // Calculate LOS and heading
-                //===================================================
-                if (homepos == 1)
-                {
-                    // Calculate the distance in y-direction. 1 nautical mile = 1.85 km.
-                    losy = ((lathome - lats) * 185) / 1000;
-                    losx = ((lonhome - lons) * 185 * longitude_factor) / 1000;
-                    los = sqrt((losy * losy) + (losx * losx));
-
-                    // Resets LOS to avoid "hanging numbers"
-                    losr[0] = 14;
-                    losr[1] = 14;
-                    losr[2] = 14;
-                    losr[3] = 14;
-
-                    // If units is defined as US.
-                    if (units == 0)
-                    {
-                        los = los * 3.28;
-                    }
-
-                    losr[0] = (  los / 1000) + 3;
-                    losr[1] = (( los % 1000) / 100) + 3;
-                    losr[2] = (((los % 1000) % 100) / 10) + 3;
-                    losr[3] = (((los % 1000) % 100) % 10) + 3;
-
-                    // Calculate heading home.
-
-                    // This piece of code could probably be more efficient, but for now it gets the job done.
-                    if (latitude_dir == 'S')
-                    {
-                        losy = losy * (-1);
-                    }
-
-                    if (longitude_dir == 'W')
-                    {
-                        losx = losx * (-1);
-                    }
-
-                    if (losy > 0)
-                    {
-                        if (losx > 0)
-                        {
-                            // Arrow right up
-                            // (57 = from radians to degrees)
-                            homehead = 90 - asin(losy / (double(los))) * 57;
-                        }
-                        if (losx <= 0)
-                        {
-                            // Arrow left up
-                            homehead = 270 + asin(losy / (double(los))) * 57;
-                        }
-                    }
-
-                    if (losy <= 0)
-                    {
-                        if (losx > 0)
-                        {
-                            // Arrow right down
-                            homehead = 90 + acos(losx / (double(los))) * 57;
-                        }
-                        if (losx <= 0)
-                        {
-                            // Arrow left down
-                            homehead = 270 - acos(abs(losx) / (double(los))) * 57;
-                        }
-                    }
-
-                    if (show_plane_pos == 1)
-                    {
-                        homehead_r[0] = ((homehead / 100) + 3) << 5;
-                        homehead_r[1] = ((homehead % 100 / 10) + 3) << 5;
-                        homehead_r[2] = ((homehead % 100 % 10) + 3) << 5;
-
-
-                    }
-
-
-
-
-
-                    //Last part.. Need to calculate which way
-                    // the arrow needs to point.
-
-                    // First we need to convert the heading to an integer
-                    headi = 0;
-                    for (int iii = 0; iii < 3; iii++)
-                    {
-                        if (head[iii] < 48)
-                        {
-                            break;
-                        }
-                        headi = headi * 10 + (head[iii] - 48);
-
-                    }
-                    arrow = homehead - headi;
-                    if (arrow < 0)
-                    {
-                        arrow = arrow + 360;
-                    }
-
-                    arrowr[0] = (  arrow / 100) + 3;
-                    arrowr[1] = (( arrow % 100) / 10) + 3;
-                    arrowr[2] = (( arrow % 100) % 10) + 3;
-                }
-
-
-                //===================================================
-                // END los calculation
-                //===================================================
-
-
-
-                //===================================================
-                // Calculate speed - to km/h
-                //===================================================
-
-                if (speedkn2[0] < 14)
-                {
-
-                    speedkm = 0;
-                    for (iiii = 0; iiii < 3; iiii++)
-                    {
-                        if (speedkn2[iiii] < 3)
-                        {
-                            break;
-                        }
-                        speedkm = speedkm * 10 + (speedkn2[iiii] - 3);
-                    }
-                    speedkm = speedkm * 10 + (speedkn2[iiii + 1] - 3);
-
-
-
-                    if (units == 0)
-                    {
-                        speedkm = (speedkm * 11.51) / 10;
-                    }
-                    else
-                    {
-                        speedkm = (speedkm * 18.52) / 10;
-                    }
-
-
-                    speedkmw[0] = (  speedkm / 1000) + 3;
-                    speedkmw[1] = (( speedkm % 1000) / 100) + 3;
-                    speedkmw[2] = (((speedkm % 1000) % 100) / 10) + 3;
-                    speedkmw[3] = (((speedkm % 1000) % 100) % 10) + 3;
-
-                }
-                speedkm2 = speedkm;
-                //===================================================
-                // End speed calculation
-                //===================================================
-
-
-                //===================================================
-                // Flight summary
-                //===================================================
-                if (speedkm > max_speed)
-                {
-                    max_speed = speedkm;
-
-                    max_speedr[0] = (  max_speed / 1000) + 3;
-                    max_speedr[1] = (( max_speed % 1000) / 100) + 3;
-                    max_speedr[2] = (((max_speed % 1000) % 100) / 10) + 3;
-                    max_speedr[3] = (((max_speed % 1000) % 100) % 10) + 3;
-
-                }
-
-                if (los > max_los)
-                {
-                    max_los = los;
-
-                    max_losr[0] = (  max_los / 1000) + 3;
-                    max_losr[1] = (( max_los % 1000) / 100) + 3;
-                    max_losr[2] = (((max_los % 1000) % 100) / 10) + 3;
-                    max_losr[3] = (((max_los % 1000) % 100) % 10) + 3;
-
-                }
-
-
-                if (altitude[0] < 14)
-                {
-
-                    altitude_num = 0;
-                    for (iiii = 0; iiii < 6; iiii++)
-                    {
-                        if (altitude[iiii] < 3)
-                        {
-                            break;
-                        }
-                        altitude_num = altitude_num * 10 + (altitude[iiii] - 3);
-                    }
-
-                    altitude_num = altitude_num * 10 + (altitude[iiii + 1] - 3);
-
-                    if (units == 0)
-                    {
-                        altitude_num = altitude_num * 3.28;
-                    }
-
-
-                    if (altitude_offset_on == 1)
-                    {
-                        altitude_num = altitude_num - altitude_offset;
-                        if (altitude_num < 0)
-                        {
-                            altitude_num = abs(altitude_num);
-                            altitude_negative = 1;
-                        }
-                        else
-                        {
-                            altitude_negative = 0;
-                        }
-
-                    }
-
-                    altitude_num2 = altitude_num;
-                    altituder[0] = (  (altitude_num / 10000) + 3);
-                    altituder[1] = (  (altitude_num % 10000) / 1000) + 3;
-                    altituder[2] = (( (altitude_num % 10000) % 1000) / 100) + 3;
-                    altituder[3] = ((((altitude_num % 10000) % 1000) % 100) / 10) + 3;
-                    altituder[4] = ((((altitude_num % 10000) % 1000) % 100) % 10) + 3;
-
-
-                    if (altitude_num > max_alt)
-                    {
-                        max_alt = altitude_num;
-
-                        max_altr[0] = altituder[0];
-                        max_altr[1] = altituder[1];
-                        max_altr[2] = altituder[2];
-                        max_altr[3] = altituder[3];
-                        max_altr[4] = altituder[4];
-
-                    }
-
-                }
-
-
-                // Add time
-                if (time[5] != last_time)
-                {
-                    last_time = time[5];
-                    flight_time++;
-
-                    flight_timer[0] = (( flight_time / 600)) + 3;
-                    flight_timer[1] = (((flight_time % 600) / 60)) + 3;
-                    flight_timer[2] = ((flight_time % 600) % 60) / 10 + 3;
-                    flight_timer[3] = ((flight_time % 600) % 60) % 10 + 3;
-
-                    kmh_total = kmh_total + speedkm;
-
-                    total_distancer[0] = (   (kmh_total / 36) / 10000) + 3;
-                    total_distancer[1] = (  ((kmh_total / 36) % 10000) / 1000) + 3;
-                    total_distancer[2] = (( ((kmh_total / 36) % 10000) % 1000) / 100) + 3;
-                    total_distancer[3] = (((((kmh_total / 36) % 10000) % 1000) % 100) / 10) + 3;
-                    total_distancer[4] = (((((kmh_total / 36) % 10000) % 1000) % 100) % 10) + 3;
-
-                    // Avg speed...
-                    avg_speed = kmh_total / flight_time;
-
-                    avg_speedr[0] = (  avg_speed / 1000) + 3;
-                    avg_speedr[1] = (( avg_speed % 1000) / 100) + 3;
-                    avg_speedr[2] = (((avg_speed % 1000) % 100) / 10) + 3;
-                    avg_speedr[3] = (((avg_speed % 1000) % 100) % 10) + 3;
-
-                }
-
-
-
-
-                //===================================================
-                // Flight summary END
-                //===================================================
-
-                //===================================================
-                // Set homeposition
-                //===================================================
-
-                // This is used to set homeposition.
-                if (homepos == 0)
-                {
-                    // If we have GPS-fix;
-                    if (GPSfix > '0')
-                    {
-                        homeposcount++;
-                        if (homeposcount > set_home_delay)
-                        {
-                            lathome = lats;
-                            lonhome = lons;
-                            homepos = 1;
-
-                            max_los = 0;
-                            max_speed = 0;
-                            kmh_total = 0;
-                            max_alt = 0;
-                            flight_time = 0;
-                            altitude_offset = altitude_num;
-
-                            lat_deg = (latitude[1] - 48) + (latitude[0] - 48) * 10;
-                            longitude_factor = cos((lat_deg * 2 * 3.14) / 360);
-
-                        }
-                    }
-                }
-
-
-                //===================================================
-                // End set homeposition
-                //===================================================
-
-
-                if (speedkm < summary_speed * 10 && los < summary_los && current_num < summary_current * 10 && flight_time > summary_time && altitude_num < summary_altitude * 10)
-                {
-                    landed = 1;
-                }
-                else
-                {
-                    landed = 0;
-                }
-
-                long_buf = current_num;
-                if (show_mah_km == 1)
-                {
-
-                    if (speedkm2 > 10)
-                    {
-                        mahkm = ((long_buf * 1000) / (speedkm2));
-                    }
-
-                    if (mahkm > 9999)
-                    {
-                        mahkm = 9999;
-                    }
-
-                    mahkmr[0] = (  mahkm / 1000) + 3;
-                    mahkmr[1] = (( mahkm % 1000) / 100) + 3;
-                    mahkmr[2] = (((mahkm % 1000) % 100) / 10) + 3;
-                    mahkmr[3] = (((mahkm % 1000) % 100) % 10) + 3;
-                }
-
-
-
-
-
-
+                lathome = lats;
+                lonhome = lons;
+                homepos = 1;
+
+                max_los = 0;
+                max_speed = 0;
+                kmh_total = 0;
+                max_alt = 0;
+                flight_time = 0;
+                altitude_offset = altitude_num;
 
             }
-
-
-
-
-
-
-            // ====================================================================================
-            // Second GPS String END
-            // ====================================================================================
-
-
-
-            // Check if the line is the GGA nmea GPS-line:
-
-            if (GPSbuffer[6] == 'A' && GPSbuffer[5] == 'G')
-            {
-
-                // Again, reset altitude to avoid "hanging characters".
-                // Can maybe be done smarter.
-
-                altitude[0] = 14;
-                altitude[1] = 14;
-                altitude[2] = 14;
-                altitude[3] = 14;
-                altitude[4] = 14;
-                altitude[5] = 14;
-
-                satellites[0] = 14;
-                satellites[1] = 14;
-
-                for (int i = 0; i < bufnr; i++)
-                {
-                    if (GPSbuffer[i] == ',')
-                    {
-                        n = 0;
-                        count++;
-                    }
-
-                    else
-                    {
-                        switch (count)
-                        {
-
-                        case 6:
-                            GPSfix = GPSbuffer[i];
-                            break;
-
-                        case 7:
-                            satellites[n] = GPSbuffer[i] - 45;
-                            break;
-
-                        case 9:
-                            altitude[n] = GPSbuffer[i] - 45;
-                            break;
-
-                        default: break;
-
-                        }
-
-                        if (count == 10)
-                        {
-                            break;
-                        }
-
-                        n++;
-
-
-                    }
-                }
-
-                altitude2[0] = altitude[0];
-                altitude2[1] = altitude[1];
-                altitude2[2] = altitude[2];
-                altitude2[3] = altitude[3];
-                altitude2[4] = altitude[4];
-                altitude2[5] = altitude[5];
-
-                satellitesr[0] = satellites[0];
-                satellitesr[1] = satellites[1];
-
-            }
-
-
-
-            // No matter what has been received, count and bufnr is reset
-            // to be ready to receive the next GPS string.
-            count = 0;
-            bufnr = 0;
-
         }
-        if (bufnr > 98)
-        {
-            bufnr = 0;
-        }
-
-
     }
 
 }
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//to multiwii developpers/committers : do not add new MSP messages without a proper argumentation/agreement on the forum
+#define MSP_IDENT                100   //out message         multitype + multiwii version + protocol version + capability variable
+#define MSP_STATUS               101   //out message         cycletime & errors_count & sensor present & box activation & current setting number
+#define MSP_RAW_IMU              102   //out message         9 DOF
+#define MSP_SERVO                103   //out message         8 servos
+#define MSP_MOTOR                104   //out message         8 motors
+#define MSP_RC                   105   //out message         8 rc chan and more
+#define MSP_RAW_GPS              106   //out message         fix, numsat, lat, lon, alt, speed, ground course
+#define MSP_COMP_GPS             107   //out message         distance home, direction home
+#define MSP_ATTITUDE             108   //out message         2 angles 1 heading
+#define MSP_ALTITUDE             109   //out message         altitude, variometer
+#define MSP_ANALOG               110   //out message         vbat, powermetersum, rssi if available on RX
+#define MSP_RC_TUNING            111   //out message         rc rate, rc expo, rollpitch rate, yaw rate, dyn throttle PID
+#define MSP_PID                  112   //out message         P I D coeff (9 are used currently)
+#define MSP_BOX                  113   //out message         BOX setup (number is dependant of your setup)
+#define MSP_MISC                 114   //out message         powermeter trig
+#define MSP_MOTOR_PINS           115   //out message         which pins are in use for motors & servos, for GUI 
+#define MSP_BOXNAMES             116   //out message         the aux switch names
+#define MSP_PIDNAMES             117   //out message         the PID names
+#define MSP_WP                   118   //out message         get a WP, WP# is in the payload, returns (WP#, lat, lon, alt, flags) WP#0-home, WP#16-poshold
+#define MSP_BOXIDS               119   //out message         get the permanent IDs associated to BOXes
+
+#define MSP_SET_RAW_RC           200   //in message          8 rc chan
+#define MSP_SET_RAW_GPS          201   //in message          fix, numsat, lat, lon, alt, speed
+#define MSP_SET_PID              202   //in message          P I D coeff (9 are used currently)
+#define MSP_SET_BOX              203   //in message          BOX setup (number is dependant of your setup)
+#define MSP_SET_RC_TUNING        204   //in message          rc rate, rc expo, rollpitch rate, yaw rate, dyn throttle PID
+#define MSP_ACC_CALIBRATION      205   //in message          no param
+#define MSP_MAG_CALIBRATION      206   //in message          no param
+#define MSP_SET_MISC             207   //in message          powermeter trig + 8 free for future use
+#define MSP_RESET_CONF           208   //in message          no param
+#define MSP_SET_WP               209   //in message          sets a given WP (WP#,lat, lon, alt, flags)
+#define MSP_SELECT_SETTING       210   //in message          Select Setting Number (0-2)
+#define MSP_SET_HEAD             211   //in message          define a new heading hold direction
+
+#define MSP_BIND                 240   //in message          no param
+
+#define MSP_EEPROM_WRITE         250   //in message          no param
+
+#define MSP_DEBUGMSG             253   //out message         debug string buffer
+#define MSP_DEBUG                254   //out message         debug1,debug2,debug3,debug4
+// End of imported defines from Multiwii Serial Protocol MultiWii_shared svn r1333
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+int MwAngle[2] = {0, 0};        // Those will hold Accelerator Angle
+static uint16_t MwRcData[8] =   // This hold receiver pulse signal
+{
+    1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500
+} ;
+
+uint16_t  MwSensorPresent = 0;
+uint32_t  MwSensorActive = 0;
+uint8_t MwVersion = 0;
+uint8_t MwVBat = 0;
+int16_t MwVario = 0;
+uint8_t armed = 0;
+uint8_t previousarmedstatus = 0; // for statistics after disarming
+int16_t GPS_distanceToHome = 0;
+uint8_t GPS_fix = 0;
+int32_t GPS_latitude;
+int32_t GPS_longitude;
+int16_t GPS_altitude;
+uint16_t GPS_speed = 0;
+int16_t GPS_directionToHome = 0;
+uint8_t GPS_numSat = 0;
+int16_t I2CError = 0;
+uint16_t cycleTime = 0;
+uint16_t MWpMeterSum = 0;
+uint16_t MwRssi = 0;
+uint16_t MWAmperage = 0;
+int success = 0;
+
+
+#define PIDITEMS 10
+
+// Mode bits
+uint32_t mode_armed;
+uint32_t mode_stable;
+uint32_t mode_horizon;
+uint32_t mode_baro;
+uint32_t mode_mag;
+uint32_t mode_gpshome;
+uint32_t mode_gpshold;
+uint32_t mode_osd_switch;
+
+
+int temp1;
+
+static uint8_t P8[PIDITEMS], I8[PIDITEMS], D8[PIDITEMS];
+
+static uint8_t rcRate8, rcExpo8;
+static uint8_t rollPitchRate;
+static uint8_t yawRate;
+static uint8_t dynThrPID;
+static uint8_t thrMid8;
+static uint8_t thrExpo8;
+
+
+static uint16_t  MwAccSmooth[3] = {0, 0, 0};   // Those will hold Accelerator data
+int32_t  MwAltitude = 0;                       // This hold barometric value
+static int16_t MwHeading = 0;
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#define SERIALBUFFERSIZE 256
+static uint8_t serialBuffer[SERIALBUFFERSIZE]; // this hold the imcoming string from serial O string
+static uint8_t receiverIndex;
+static uint8_t dataSize;
+static uint8_t cmdMSP;
+static uint8_t rcvChecksum;
+static uint8_t readIndex;
+
+uint8_t read8();
+uint16_t read16();
+uint32_t read32();
+
+uint32_t read32()
+{
+    uint32_t t = read16();
+    t |= (uint32_t)read16() << 16;
+    return t;
+}
+
+uint16_t read16()
+{
+    uint16_t t = read8();
+    t |= (uint16_t)read8() << 8;
+    return t;
+}
+
+uint8_t read8()
+{
+    return serialBuffer[readIndex++];
+}
+
+// --------------------------------------------------------------------------------------
+// Here are decoded received commands from MultiWii
+void serialMSPCheck()
+{
+    readIndex = 0;
+    success++;
+    if (cmdMSP == MSP_RAW_GPS)
+    {
+        GPS_fix = read8();
+        if (GPS_fix != 0)
+        {
+            GPSfix = '1';
+        }
+        GPS_numSat = read8();
+        lats = GPS_latitude = read32();
+        lons = GPS_longitude = read32();
+        altitude_num = GPS_altitude = read16();
+        speedkm = GPS_speed = read16()/10;
+    }
+
+    else if (cmdMSP == MSP_COMP_GPS)
+    {
+        los = GPS_distanceToHome = read16();
+        arrowd = (int(read16()) + 22) / 45;
+        if (arrowd < 0)
+        {
+            arrowd += 8;
+        }
+    }
+    else if (cmdMSP == MSP_ATTITUDE)
+    {
+        for (uint8_t i = 0; i < 2; i++)
+            MwAngle[i] = read16();
+        MwHeading = read16();
+        read16();
+    }
+}
+
+// End of decoded received commands from MultiWii
+// --------------------------------------------------------------------------------------
+
+
+static enum _serial_state
+{
+    IDLE,
+    HEADER_START,
+    HEADER_M,
+    HEADER_ARROW,
+    HEADER_SIZE,
+    HEADER_CMD,
+}
+c_state = IDLE;
+
+int should_process_now = 0;
+extern unsigned char voltager[];
+
+void serialMSPreceive()
+{
+    uint8_t c;
+
+    while (Serial.available() > 0)
+    {
+        c = Serial.read();
+
+        if (c_state == IDLE)
+        {
+            c_state = (c == '$') ? HEADER_START : IDLE;
+        }
+        else if (c_state == HEADER_START)
+        {
+            c_state = (c == 'M') ? HEADER_M : IDLE;
+        }
+        else if (c_state == HEADER_M)
+        {
+            c_state = (c == '>') ? HEADER_ARROW : IDLE;
+
+        }
+        else if (c_state == HEADER_ARROW)
+        {
+            if (c > SERIALBUFFERSIZE)
+            {
+                // now we are expecting the payload size
+                c_state = IDLE;
+            }
+            else
+            {
+                dataSize = c;
+                c_state = HEADER_SIZE;
+                rcvChecksum = c;
+            }
+        }
+        else if (c_state == HEADER_SIZE)
+        {
+            c_state = HEADER_CMD;
+            cmdMSP = c;
+            rcvChecksum ^= c;
+            receiverIndex = 0;
+        }
+        else if (c_state == HEADER_CMD)
+        {
+            rcvChecksum ^= c;
+            if (receiverIndex == dataSize) // received checksum byte
+            {
+                if (rcvChecksum == 0)
+                {
+                    GPSfix = '1';
+                    should_process_now = 1;
+
+                }
+                else
+                {
+                    temp1 = rcvChecksum;
+                }
+                c_state = IDLE;
+            }
+            else
+                serialBuffer[receiverIndex++] = c;
+        }
+    }
+}
+
+
+
+void blankserialRequest(uint8_t requestMSP)
+{
+    /*if (requestMSP == MSP_OSD && fontMode)
+    {
+        fontSerialRequest();
+        return;
+    }*/
+    Serial.write('$');
+    Serial.write('M');
+    Serial.write('<');
+    Serial.write((uint8_t)0x00);
+    Serial.write(requestMSP);
+    Serial.write(requestMSP);
+}
+/*
+void fontSerialRequest()
+{
+    int16_t cindex = getNextCharToRequest();
+    uint8_t txCheckSum;
+    uint8_t txSize;
+    Serial.write('$');
+    Serial.write('M');
+    Serial.write('<');
+    txCheckSum = 0;
+    txSize = 3;
+    Serial.write(txSize);
+    txCheckSum ^= txSize;
+    Serial.write(MSP_OSD);
+    txCheckSum ^= MSP_OSD;
+    Serial.write(OSD_GET_FONT);
+    txCheckSum ^= OSD_GET_FONT;
+    Serial.write(cindex);
+    txCheckSum ^= cindex;
+    Serial.write(cindex >> 8);
+    txCheckSum ^= cindex >> 8;
+    Serial.write(txCheckSum);
+}*/
+
+
+int counter = 0;
+void do_multiwii_communication()
+{
+    counter++;
+    if (counter >= 100)
+    {
+        counter = 0;
+    }
+    if (counter == 0)
+    {
+        blankserialRequest(MSP_ATTITUDE);
+    }
+    if (counter == 50 )
+    {
+        //Serial.println(Serial.available());
+        blankserialRequest(MSP_RAW_GPS);
+    }
+    if (counter == 70)
+    {
+        update_gps_data();
+    }
+
+    delay(10);
+    //Serial.println(loopcount);
+}
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 
 void gps()
 {
@@ -1031,12 +795,12 @@ void gps()
         Buttonpin = 6;
     }
 
-    update_menu();
+    //update_menu();
 
     while (1 == 1)
     {
-
-        do_serial_communication();
+        do_multiwii_communication();
+        //do_serial_communication();
     }
 
 }

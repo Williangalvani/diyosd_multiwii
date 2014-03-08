@@ -32,7 +32,6 @@ pinMode(10,OUTPUT);
 pinMode(11,OUTPUT);  
 pinMode(12,OUTPUT);
 pinMode(13,OUTPUT);
-
 pinMode(0,INPUT);  
 pinMode(1,INPUT);
 pinMode(2,INPUT);
@@ -47,14 +46,15 @@ pinMode(9,INPUT);
 
 // Init Serial communication. 
 Serial.begin(BAUD);
- UBRR0H = (unsigned char) (BAUD_SETTINGS>>8);
- UBRR0L = (unsigned char) (BAUD_SETTINGS);
- UCSR0A = 0b0000000;
- UCSR0B = (1<<RXEN0) | (1<<TXEN0);
- UCSR0C = (3<<UCSZ00);
+ //UBRR0H = (unsigned char) (BAUD_SETTINGS>>8);
+ //UBRR0L = (unsigned char) (BAUD_SETTINGS);
+ //UCSR0A = 0b0000000;
+ //UCSR0B = (1<<RXEN0) | (1<<TXEN0);
+ //UCSR0C = (3<<UCSZ00);
 
 // Used to set the GPS update-rate to 5 hz, and GPGGA and GPRMC gps-strings (Only for MKT-GPS).
 
+/*
   Serial.print("$PMTK300,200,0,0,0,0*2F");
   Serial.write(13);
   Serial.write(10); 
@@ -62,7 +62,7 @@ Serial.begin(BAUD);
   Serial.print("$PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28");
   Serial.write(13);
   Serial.write(10);
-
+*/
  
 // Enable SPI for pixel generation
 // Set SPI;  

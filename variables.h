@@ -46,7 +46,7 @@ unsigned char mahr[]={3,3,3,3,3,3}; // Stores mah characters (numbers) written t
  int ADCreal=0;  // Just a stupid name for the complete analog-read
  int ADCreal2=0; // Can be replaced with ADCreal
 
-
+int frame = 0;
 
 //========================================
 // Buffers
@@ -57,8 +57,6 @@ unsigned char buffer[20];
 int buffer2[12]={12,12,12,12,12,12,12,12,12,12,12,12};
 unsigned int buffer3[15];
 
-
- 
 
 //========================================
 // Mixed

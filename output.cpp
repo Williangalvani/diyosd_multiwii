@@ -3,13 +3,16 @@
 #include "ascii.h"
 #include "output.h"
 #include "variables.h"
-
+#include "Arduino.h"
 #include <avr/delay.h>
 #include <avr/pgmspace.h>
 #include <EEPROM.h>
 
 #define True 1
 #define False 0
+
+unsigned char satellites[3] = {3, 3, 3};
+unsigned char satellitesr[3] = {3, 3, 3};
 
 
 extern unsigned char align_text;
@@ -19,7 +22,7 @@ extern unsigned char show_plane_pos;
 extern unsigned char show_mah_km;
 extern unsigned char mahkmr[];
 extern int mah_alarm;
-
+extern int frame;
 extern int homehead_r[];
 
 extern long los;
@@ -39,8 +42,9 @@ extern unsigned char menu;
 extern unsigned char altitude_offset_on;
 extern char GPSbuffer[100];
 extern char homepos;
-extern unsigned char satellitesr[3];
+
 extern char GPSfix;
+extern uint8_t GPS_numSat;
 extern int homeposcount;
 extern unsigned char test;
 extern unsigned char loadbar[];
@@ -62,10 +66,13 @@ extern unsigned char losr[];
 extern unsigned char speedkmw[5];
 extern unsigned char altitude2[10];
 extern unsigned char altituder[10];
-int current_letter = 0;
+unsigned char speedr[] = {1,1,1,1};
 
+int current_letter = 0;
+extern int temp1;
 
 void print_large_3(unsigned int *buffer);
+void serialMSPCheck();
 
 void draw_arrow()
 {
@@ -82,7 +89,7 @@ void write_speed()
 {
 
     if (show_decimals == 1)
-    {
+    {   
         print_large_3(buffer3);
 
 
@@ -568,7 +575,7 @@ void print_top_large_numbers()
 void print_bottom_large_numbers()
 {
     // Used to align the text
-    _delay_loop_1(align_text +5);
+    _delay_loop_1(align_text + 5);
 
     screen_line = line - (butlinenumbers + 1);
 
@@ -793,8 +800,9 @@ void print_top_text()
 void detectframe()
 {
     line = 0;
+    //      frame++;
 }
-
+/*
 void print_menu()
 {
 
@@ -1380,7 +1388,7 @@ void print_menu()
     }
 
 }
-
+*/
 void print_time()
 {
     screen_line = line - (summaryline + 66);
@@ -1471,6 +1479,8 @@ void print_version()
     DimOff
 }
 
+
+
 void print_summary()
 {
 
@@ -1480,7 +1490,7 @@ void print_summary()
 
     if (menuon == 1)
     {
-        print_menu();
+        //  print_menu();
     }
     else if (homepos == 0)
     {
@@ -2136,38 +2146,13 @@ void print_gps()
 void print_top_numbers()
 {
 
-    if (speedkmw[0] == 3 && speedkmw[1] == 3)
-    {
-        buffer3[0] = speedkmw[2] << 5;
-        buffer3[1] = 1 << 5;
-        buffer3[2] = speedkmw[3] << 5;
-        buffer3[3] = 14 << 5;
-        buffer3[4] = 14 << 5;
+    buffer3[0] = speedr[0] <<5;;
+    buffer3[1] = speedr[1]<<5;;
+    buffer3[2] = speedr[2]<<5;;
+    buffer3[3] = speedr[3]<<5;
+    buffer3[4] = speedr[4]<<5;
 
-    }
-    else if (speedkmw[0] == 3)
-    {
-        buffer3[0] = speedkmw[1] << 5;
-        buffer3[1] = speedkmw[2] << 5;
-        buffer3[2] = 1 << 5;
-        buffer3[3] = speedkmw[3] << 5;
-        buffer3[4] = 14 << 5;
-
-        if (show_decimals == 0)
-        {
-            buffer3[2] = 14 << 5;
-        }
-
-    }
-    else
-    {
-        buffer3[0] = speedkmw[0] << 5;
-        buffer3[1] = speedkmw[1] << 5;
-        buffer3[2] = speedkmw[2] << 5;
-        buffer3[3] = 1 << 5;
-        buffer3[4] = speedkmw[3] << 5;
-    }
-
+ 
 
     buffer3[5] = losr[0] << 5;
     buffer3[6] = losr[1] << 5;
@@ -2333,7 +2318,7 @@ void print_bottom_numbers()
 
     screen_line = (arrowr[0] - 3) * 100 + (arrowr[1] - 3) * 10 + (arrowr[0] - 3);
 
-    // Determine what way the arrow should point
+    /*/ Determine what way the arrow should point
     for (i = 0; i < 8; i++)
     {
         if (screen_line < (23 + 45 * i))
@@ -2346,7 +2331,7 @@ void print_bottom_numbers()
     if (screen_line > 360 - 23)
     {
         arrowd = 0;
-    }
+    }*/
 }
 
 void do_math()
@@ -2548,6 +2533,71 @@ void do_math()
     }
 }
 
+int update_counter = 0;
+
+extern unsigned char voltager[];
+extern int success;
+extern unsigned int speedkm;
+
+void update_data()
+{
+    update_counter++;
+    if (update_counter == 0)
+    {
+        voltager[0] = (success / 100) + 3 ;
+        voltager[1] = ((success % 100) / 10) + 3;
+        voltager[3] = ((success % 100) % 10) + 3;
+    }
+    else if (update_counter == 1)
+    {
+        satellitesr[0] = (GPS_numSat / 10) + 3 ;
+        satellitesr[1] = (GPS_numSat % 10) + 3;
+    }
+    else if (update_counter == 2)
+    {
+        
+    }
+    ///convert los, one piece at a time
+    else if (update_counter == 3)
+    {
+       losr[3] = (los % 10 + 3);
+       losr[2] = (los%100) / 10 + 3;
+    }
+
+    else if (update_counter == 4)
+    {   
+       losr[1] = (((los%1000) / 100) + 3);
+    }
+
+    else if (update_counter == 5)
+    {
+         losr[0] = (los /1000 + 3);
+    }
+    ///convert speed, one piece at a time
+    else if (update_counter == 6)
+    {
+       speedr[4] = (speedkm % 10 + 3);
+       speedr[2] = (speedkm%100) / 10 + 3;
+    }
+
+    else if (update_counter == 7)
+    {   
+       speedr[1] = (((speedkm%1000) / 100) + 3);
+    }
+
+    else if (update_counter == 8)
+    {
+         speedr[0] = (speedkm /1000 + 3);
+    }
+
+
+    
+    if (update_counter > 10)
+    {
+        update_counter = 0;
+    }
+}
+extern int should_process_now;
 void detectline()
 {
     little_delay // This is used to adjust to timing when using SimpleOSD instead of Arduino
@@ -2587,27 +2637,27 @@ void detectline()
         print_bottom_numbers();
     }
 
-
-    // As a quick and dirty implementation the timing from the video-signal
-    // is used to calculate the power consumption (mAh). But if it looses sync you
-    // wan't even be able to see any text - so this should de fine.
-    // Maybe not the best way to do it, but this way I know when it does what.
-    // ============================================================
-    // Current sensor
-    // ============================================================
-
-    // As the calculations takes quite a while they will be done after last line with text.
-    // Otherwise the text will "jump a bit". We might miss a line or two - but as it is in
-    // the buttom of the screen where we don't need text, it doesn't really matter.
+    //else if (line >= current_calc_line && line <= current_calc_line+20)
     else if (line == current_calc_line)
     {
-        do_math();
+        if (should_process_now)
+        {
+            serialMSPCheck();
+            should_process_now = 0;
+
+        }
+        else if (Serial.available() > 5)
+        {
+            serialMSPreceive();
+        }
+        else
+        {
+            update_data();
+        }
+
 
     }
-    // ============================================================
-    // Current sensor END
 
-    // Increase line count..
     line++;
 
     // Let's make sure SPI is not idling high.
