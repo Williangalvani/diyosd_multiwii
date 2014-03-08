@@ -6,4 +6,5 @@
 void detectframe();
 void detectline();
 void serialMSPreceive();
+void update_data();
 #endif

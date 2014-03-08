@@ -11,6 +11,49 @@
 #define True 1
 #define False 0
 
+//to multiwii developpers/committers : do not add new MSP messages without a proper argumentation/agreement on the forum
+#define MSP_IDENT                100   //out message         multitype + multiwii version + protocol version + capability variable
+#define MSP_STATUS               101   //out message         cycletime & errors_count & sensor present & box activation & current setting number
+#define MSP_RAW_IMU              102   //out message         9 DOF
+#define MSP_SERVO                103   //out message         8 servos
+#define MSP_MOTOR                104   //out message         8 motors
+#define MSP_RC                   105   //out message         8 rc chan and more
+#define MSP_RAW_GPS              106   //out message         fix, numsat, lat, lon, alt, speed, ground course
+#define MSP_COMP_GPS             107   //out message         distance home, direction home
+#define MSP_ATTITUDE             108   //out message         2 angles 1 heading
+#define MSP_ALTITUDE             109   //out message         altitude, variometer
+#define MSP_ANALOG               110   //out message         vbat, powermetersum, rssi if available on RX
+#define MSP_RC_TUNING            111   //out message         rc rate, rc expo, rollpitch rate, yaw rate, dyn throttle PID
+#define MSP_PID                  112   //out message         P I D coeff (9 are used currently)
+#define MSP_BOX                  113   //out message         BOX setup (number is dependant of your setup)
+#define MSP_MISC                 114   //out message         powermeter trig
+#define MSP_MOTOR_PINS           115   //out message         which pins are in use for motors & servos, for GUI 
+#define MSP_BOXNAMES             116   //out message         the aux switch names
+#define MSP_PIDNAMES             117   //out message         the PID names
+#define MSP_WP                   118   //out message         get a WP, WP# is in the payload, returns (WP#, lat, lon, alt, flags) WP#0-home, WP#16-poshold
+#define MSP_BOXIDS               119   //out message         get the permanent IDs associated to BOXes
+
+#define MSP_SET_RAW_RC           200   //in message          8 rc chan
+#define MSP_SET_RAW_GPS          201   //in message          fix, numsat, lat, lon, alt, speed
+#define MSP_SET_PID              202   //in message          P I D coeff (9 are used currently)
+#define MSP_SET_BOX              203   //in message          BOX setup (number is dependant of your setup)
+#define MSP_SET_RC_TUNING        204   //in message          rc rate, rc expo, rollpitch rate, yaw rate, dyn throttle PID
+#define MSP_ACC_CALIBRATION      205   //in message          no param
+#define MSP_MAG_CALIBRATION      206   //in message          no param
+#define MSP_SET_MISC             207   //in message          powermeter trig + 8 free for future use
+#define MSP_RESET_CONF           208   //in message          no param
+#define MSP_SET_WP               209   //in message          sets a given WP (WP#,lat, lon, alt, flags)
+#define MSP_SELECT_SETTING       210   //in message          Select Setting Number (0-2)
+#define MSP_SET_HEAD             211   //in message          define a new heading hold direction
+
+#define MSP_BIND                 240   //in message          no param
+
+#define MSP_EEPROM_WRITE         250   //in message          no param
+
+#define MSP_DEBUGMSG             253   //out message         debug string buffer
+#define MSP_DEBUG                254   //out message         debug1,debug2,debug3,debug4
+
+
 unsigned char satellites[3] = {3, 3, 3};
 unsigned char satellitesr[3] = {3, 3, 3};
 
@@ -66,7 +109,7 @@ extern unsigned char losr[];
 extern unsigned char speedkmw[5];
 extern unsigned char altitude2[10];
 extern unsigned char altituder[10];
-unsigned char speedr[] = {1,1,1,1};
+unsigned char speedr[] = {1, 1, 1, 1};
 
 int current_letter = 0;
 extern int temp1;
@@ -89,7 +132,7 @@ void write_speed()
 {
 
     if (show_decimals == 1)
-    {   
+    {
         print_large_3(buffer3);
 
 
@@ -383,11 +426,12 @@ void print_timer()
         if (line == timer_line + 1)
         {
             // first line, isolating numbers
+            /*
             buffer2[0] = (flight_timer[0]) << 5;
             buffer2[1] = (flight_timer[1]) << 5;
             buffer2[2] = (flight_timer[2]) << 5;
             buffer2[3] = (flight_timer[3]) << 5;
-
+            */
             if (show_mah_km == 1 || show_rssi == 1)
             {
                 /*               if (show_rssi == 1)
@@ -438,21 +482,9 @@ void print_timer()
             _delay_loop_1(6);
             print_large_4(buffer2);
 
+            _delay_loop_1(84);
+            delay1
 
-            if (show_plane_pos == 1)
-            {
-                _delay_loop_1(44);
-                print_large_3((unsigned int *) homehead_r);
-                delay10;
-
-                DimOff;
-
-            }
-            else
-            {
-                _delay_loop_1(84);
-                delay1
-            }
             if (show_mah_km == 1 || show_rssi == 1)
             {
 
@@ -477,30 +509,6 @@ void print_top_large_numbers()
 
     if (line == toplinenumbers + 1)
     {
-
-        if (los > los_alarm && flight_timer[3] % 2 == 0 && los_alarm != 0)
-        {
-
-            buffer3[5] = 14 << 5;
-            buffer3[6] = 14 << 5;
-            buffer3[7] = 14 << 5;
-            buffer3[8] = 14 << 5;
-
-        }
-
-
-        if (altitude_num2 > alt_alarm * 10 && flight_timer[3] % 2 == 0 && alt_alarm != 0)
-        {
-
-            buffer3[9] = 14 << 5;
-            buffer3[10] = 14 << 5;
-            buffer3[11] = 14 << 5;
-            buffer3[12] = 14 << 5;
-            buffer3[13] = 14 << 5;
-            buffer3[14] = 14 << 5;
-
-        }
-
 
     }
     else
@@ -582,24 +590,6 @@ void print_bottom_large_numbers()
 
     if (line == butlinenumbers + 1)
     {
-        if (bat_volt < volt_alarm && flight_timer[3] % 2 == 0 && volt_alarm != 0)
-        {
-
-            buffer2[8] = 14 << 5;
-            buffer2[9] = 14 << 5;
-            buffer2[10] = 14 << 5;
-
-        }
-
-
-        if ((mahr[3] - 3) + (mahr[2] - 3) * 10 + (mahr[1] - 3) * 100 + (mahr[0] - 3) * 1000 > mah_alarm && flight_timer[3] % 2 == 0 && mah_alarm != 0)
-        {
-            buffer2[4] = 14 << 5;
-            buffer2[5] = 14 << 5;
-            buffer2[6] = 14 << 5;
-            buffer2[7] = 14 << 5;
-
-        }
 
 
     }
@@ -1914,11 +1904,12 @@ void print_summary()
                 SPDR = letters[buffer[3] + (screen_line)];
                 delay13
 
+                /*
                 buffer[0] = (flight_timer[0]) << 3;
                 buffer[1] = (flight_timer[1]) << 3;
                 buffer[2] = (flight_timer[2]) << 3;
                 buffer[3] = (flight_timer[3]) << 3;
-
+                */
                 _delay_loop_1(20);
                 delay2
 
@@ -2069,90 +2060,19 @@ void print_summary()
 
 void print_gps()
 {
-    // Used to align the text
-    _delay_loop_1(align_text - 5);
 
-
-    if (line == (gps_nmea_line + 1))
-    {
-        if (altitude_num2 < show_gps_coordinates_altitude * 10 | flight_timer[3] % show_gps_coordinates_second == 0)
-        {
-
-            // _delay_loop_1(22);
-            showcoordinates = 1;
-        }
-        else
-        {
-            showcoordinates = 0;
-        }
-
-    }
-    else if (showcoordinates == 1)
-    {
-        _delay_loop_1(5);
-        buffer[0] = (latitude[0] - 45) << 3;
-        buffer[1] = (latitude[1] - 45) << 3;
-        buffer[2] = (latitude[2] - 45) << 3;
-        buffer[3] = (latitude[3] - 45) << 3;
-        buffer[4] = (latitude[4] - 45) << 3;
-        buffer[5] = (latitude[5] - 45) << 3;
-        buffer[6] = (latitude[6] - 45) << 3;
-        buffer[7] = (latitude[7] - 45) << 3;
-        buffer[8] = (latitude[8] - 45) << 3;
-        buffer[9] = (latitude[9] - 45) << 3;
-
-        screen_line = line - (gps_nmea_line + 1);
-
-        DimOn;
-        for (unsigned char ij = 0; ij < 10; ij++)
-        {
-            SPDR = numbers[(buffer[ij]) + (screen_line)];
-            _delay_loop_1(2);
-        }
-
-        buffer[10] = (latitude_dir) << 3;
-        SPDR = letters[(buffer[10]) + (screen_line)];
-        delay13
-        DimOff;
-
-
-        //     _delay_loop_1(8);
-        buffer[0] = (longitude[0] - 45) << 3;
-        buffer[1] = (longitude[1] - 45) << 3;
-        buffer[2] = (longitude[2] - 45) << 3;
-        buffer[3] = (longitude[3] - 45) << 3;
-        buffer[4] = (longitude[4] - 45) << 3;
-        buffer[5] = (longitude[5] - 45) << 3;
-        buffer[6] = (longitude[6] - 45) << 3;
-        buffer[7] = (longitude[7] - 45) << 3;
-        buffer[8] = (longitude[8] - 45) << 3;
-        buffer[9] = (longitude[9] - 45) << 3;
-
-        DimOn;
-        for (unsigned char ij = 0; ij < 10; ij++)
-        {
-            SPDR = numbers[(buffer[ij]) + (screen_line)];
-            _delay_loop_1(2);
-        }
-
-        buffer[10] = (longitude_dir) << 3;
-        SPDR = letters[(buffer[10]) + (screen_line)];
-        delay13
-        DimOff;
-
-    }
 }
 
 void print_top_numbers()
 {
 
-    buffer3[0] = speedr[0] <<5;;
-    buffer3[1] = speedr[1]<<5;;
-    buffer3[2] = speedr[2]<<5;;
-    buffer3[3] = speedr[3]<<5;
-    buffer3[4] = speedr[4]<<5;
+    buffer3[0] = speedr[0] << 5;;
+    buffer3[1] = speedr[1] << 5;;
+    buffer3[2] = speedr[2] << 5;;
+    buffer3[3] = speedr[3] << 5;
+    buffer3[4] = speedr[4] << 5;
 
- 
+
 
     buffer3[5] = losr[0] << 5;
     buffer3[6] = losr[1] << 5;
@@ -2318,219 +2238,6 @@ void print_bottom_numbers()
 
     screen_line = (arrowr[0] - 3) * 100 + (arrowr[1] - 3) * 10 + (arrowr[0] - 3);
 
-    /*/ Determine what way the arrow should point
-    for (i = 0; i < 8; i++)
-    {
-        if (screen_line < (23 + 45 * i))
-        {
-            arrowd = i;
-            break;
-        }
-    }
-
-    if (screen_line > 360 - 23)
-    {
-        arrowd = 0;
-    }*/
-}
-
-void do_math()
-{
-    loopcount++;
-
-    // With 50 FPS, this will give an update-rate of 5 hz. (with odd/even lines 10 hz)
-    if (loopcount == 10)
-    {
-        loopcount = 0;
-    }
-
-
-    // with 10 bit ADC and 5 volt ref coltage we have;
-    // (with 50 A current sensor)
-    // 1024/5 = 205 = 1 volt = 10 A
-    // First the ADC is set to take a reading;
-
-    if (loopcount == 0)
-    {
-
-        // The ADC is 10 bit, so we have to read from 2 registers.
-        ADCtemp = ADCL;
-        ADCtemp2 = ADCH;
-
-        // Adding the high and low register;
-        rssi_reading = ADCtemp + (ADCtemp2 << 8);
-
-
-        rssi_reading = (rssi_reading - rssi_min) * rssi_cal;
-
-        rssi_negative = 0;
-        if (rssi_reading < 0)
-        {
-            rssi_negative = 1;
-            rssi_reading = rssi_reading * (-1);
-        }
-
-        rssir[0] = (rssi_reading / 100) + 3;
-        rssir[1] = ((rssi_reading % 100) / 10) + 3;
-        rssir[2] = ((rssi_reading % 100) % 10) + 3;
-
-        //SPDR=0b11111110;
-    }
-
-
-
-    if (loopcount == 1)
-    {
-        // Setup ADC to be used with current sensor
-        mux_currentSens
-
-        // Start the conversion (ADC)
-        ADCSRA |= (1 << ADSC);
-    }
-
-    // In next frame - the analog
-    // reading should have been ready for quite some time
-    if (loopcount == 2)
-    {
-
-        // The ADC is 10 bit, so we have to read from 2 registers.
-        ADCtemp = ADCL;
-        ADCtemp2 = ADCH;
-
-        // Adding the high and low register;
-        ADCreal = ADCtemp + (ADCtemp2 << 8);
-
-        // Prepare voltage reading for battery-voltage
-        // Setup ADC to be used with voltage reading on ADC7, and set the reference voltage.
-        mux_batVoltage
-
-        // Start the conversion (ADC)
-        ADCSRA |= (1 << ADSC);
-
-
-        // Removes offset.
-
-        if (ADCreal <= offset_)
-        {
-            ADCreal = 0;
-        }
-        if (ADCreal > offset_)
-        {
-            ADCreal = ADCreal - offset_;
-        }
-
-
-    }
-
-    // Current calibration.
-    if (loopcount == 3)
-    {
-        current_num = ADCreal * current_cal;
-
-        // Updates currentr which will be displayed directly on the OSD;
-        currentr[0] = (current_num / 100) + 3;
-        currentr[1] = ((current_num % 100) / 10) + 3;
-        currentr[2] = 1; // Writes the dot. Should only be done once.
-        currentr[3] = ((current_num % 100) % 10) + 3;
-
-        // Updates the total mah consumed.
-        mah = mah + current_num;
-
-        // For testing timing.. Almost at the end of line..
-        //SPDR=0b11111100;
-    }
-
-    if (loopcount == 4)
-    {
-        // 10.000 mAh is 10 amps in 1 hour. With 5 hz update rate
-        // this will show as 1800000. Divide be 18
-        // will give 100000. The last number will be used as decimal.
-        // microcontrollers don't really like decimal-numbers, so we will
-        // avoid this
-
-        //NTSC have 1.2 times faster framerate.
-
-        //PAL
-        if (VIDEO_SYSTEM == 0)
-        {
-            mahtemp = mah / 18;
-        }                //NTSC
-        else
-        {
-            mahtemp = mah / 21.6;
-        }
-
-        // Prette close at line-end already...
-        //SPDR=0b11111100;
-
-        // The ADC is 10 bit, so we have to read from 2 registers. (This is used for battery-voltage)
-        ADCtemp = ADCL;
-        ADCtemp2 = ADCH;
-
-        // Adding the high and low register;
-        ADCreal = ADCtemp + (ADCtemp2 << 8);
-    }
-
-    if (loopcount == 5)
-    {
-        // Updates the 2 first mah numbers;
-
-        mahr[0] = (mahtemp / 10000) + 3;
-
-        // For testing timing.. Almost at the end of line..
-        //SPDR=0b11111100;
-
-        // Divides with 1.82 - calibration. This matches my voltage-divider (2 resistors).
-        ADCreal2 = ADCreal / voltage_divider_cal;
-
-    }
-
-    if (loopcount == 6)
-    {
-        // Updates the 3 last numbers of mAh consumed.
-        mahr[1] = ((mahtemp % 10000) / 1000) + 3;
-        //SPDR=0b11111100;
-
-        // Updates the battery-voltage that will be shown.
-        bat_volt = ADCreal2;
-
-        voltager[0] = (ADCreal2 / 100) + 3;
-        voltager[1] = ((ADCreal2 % 100) / 10) + 3;
-        voltager[2] = 1; // Writes the dot. Should only be done once.
-        voltager[3] = ((ADCreal2 % 100) % 10) + 3;
-
-    }
-
-    if (loopcount == 7)
-    {
-        // Updates the 3 last numbers of mAh consumed.
-        mahr[2] = (((mahtemp % 10000) % 1000) / 100) + 3;
-        // Timing seems fine - just at the end of the line
-        //SPDR=0b11111100;
-    }
-
-    if (loopcount == 8)
-    {
-        // Updates the 3 last numbers of mAh consumed.
-        mahr[3] = ((((mahtemp % 10000) % 1000) % 100) / 10) + 3;
-        // Timing seems fine - just at the end of the line
-        //SPDR=0b11111100;
-    }
-
-
-    if (loopcount == 9)
-    {
-        // Updates the 3 last numbers of mAh consumed.
-        mahr[4] = ((((mahtemp % 10000) % 1000) % 100) % 10) + 3;
-        // Timing seems fine - just at the end of the line
-        //SPDR=0b11111100;
-
-        // Setup ADC to be used with RSSI
-        mux_rssi
-
-        // Start the conversion (ADC)
-        ADCSRA |= (1 << ADSC);
-    }
 }
 
 int update_counter = 0;
@@ -2538,72 +2245,88 @@ int update_counter = 0;
 extern unsigned char voltager[];
 extern int success;
 extern unsigned int speedkm;
+extern int16_t GPS_altitude;
+
+extern int updatedSpeed ;
+extern int updatedArrow;
+extern int updatedAlt;
+extern int updatedDist;
+extern int updatedVolt;
+extern int updatedCur;
+extern int updatedSats  ;
 
 void update_data()
 {
-    update_counter++;
-    if (update_counter == 0)
+    if (updatedVolt)
     {
         voltager[0] = (success / 100) + 3 ;
         voltager[1] = ((success % 100) / 10) + 3;
         voltager[3] = ((success % 100) % 10) + 3;
+        updatedVolt = 0;
     }
-    else if (update_counter == 1)
+    if (updatedSats)
     {
         satellitesr[0] = (GPS_numSat / 10) + 3 ;
         satellitesr[1] = (GPS_numSat % 10) + 3;
+        updatedSats = 0;
     }
-    else if (update_counter == 2)
-    {
-        
-    }
+
     ///convert los, one piece at a time
-    else if (update_counter == 3)
+    if (updatedDist)
     {
-       losr[3] = (los % 10 + 3);
-       losr[2] = (los%100) / 10 + 3;
-    }
-
-    else if (update_counter == 4)
-    {   
-       losr[1] = (((los%1000) / 100) + 3);
-    }
-
-    else if (update_counter == 5)
-    {
-         losr[0] = (los /1000 + 3);
+        losr[3] = (los % 10 + 3);
+        losr[2] = (los % 100) / 10 + 3;
+        losr[1] = (((los % 1000) / 100) + 3);
+        losr[0] = (los / 1000 + 3);
+        updatedDist = 0;
     }
     ///convert speed, one piece at a time
-    else if (update_counter == 6)
+    if (updatedSpeed)
     {
-       speedr[4] = (speedkm % 10 + 3);
-       speedr[2] = (speedkm%100) / 10 + 3;
+        speedr[4] = (speedkm % 10 + 3);
+        speedr[2] = (speedkm % 100) / 10 + 3;
+        speedr[1] = (((speedkm % 1000) / 100) + 3);
+        speedr[0] = (speedkm / 1000 + 3);
+        updatedSpeed = 0;
     }
-
-    else if (update_counter == 7)
-    {   
-       speedr[1] = (((speedkm%1000) / 100) + 3);
-    }
-
-    else if (update_counter == 8)
+    if (updatedAlt)
     {
-         speedr[0] = (speedkm /1000 + 3);
+        altituder[4] =  (GPS_altitude % 10 + 3);
+        altituder[3] = (GPS_altitude % 100) / 10 + 3;
+        altituder[2] = (((GPS_altitude % 1000) / 100) + 3);
+        altituder[1] = (GPS_altitude / 1000 + 3);
+        updatedAlt = 0;
     }
 
-
-    
-    if (update_counter > 10)
-    {
-        update_counter = 0;
-    }
 }
 extern int should_process_now;
+int msgcounter = 0;
+void blankserialRequest(uint8_t requestMSP);
+
 void detectline()
 {
     little_delay // This is used to adjust to timing when using SimpleOSD instead of Arduino
 
     print_timer();
 
+    if (line == serial_line)
+    {
+
+        msgcounter++;
+        if (msgcounter >= 10)
+        {
+            msgcounter = 0;
+        }
+        if (msgcounter == 0)
+        {
+            blankserialRequest(MSP_ATTITUDE);
+        }
+        if (msgcounter == 5 )
+        {
+            blankserialRequest(MSP_RAW_GPS);
+        }
+
+    }
     if (line > toplinenumbers && line < (toplinenumbers + 17))
     {
         print_top_large_numbers();
@@ -2619,7 +2342,7 @@ void detectline()
     }
     else if (line > summaryline && line < (summaryline + 90))
     {
-        print_summary();
+        //print_summary();
     }
     else if (line > gps_nmea_line && line < (gps_nmea_line + 9))
     {
@@ -2638,25 +2361,6 @@ void detectline()
     }
 
     //else if (line >= current_calc_line && line <= current_calc_line+20)
-    else if (line == current_calc_line)
-    {
-        if (should_process_now)
-        {
-            serialMSPCheck();
-            should_process_now = 0;
-
-        }
-        else if (Serial.available() > 5)
-        {
-            serialMSPreceive();
-        }
-        else
-        {
-            update_data();
-        }
-
-
-    }
 
     line++;
 

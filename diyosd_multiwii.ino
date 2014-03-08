@@ -49,9 +49,9 @@ Serial.begin(BAUD);
  //UBRR0H = (unsigned char) (BAUD_SETTINGS>>8);
  //UBRR0L = (unsigned char) (BAUD_SETTINGS);
  //UCSR0A = 0b0000000;
- //UCSR0B = (1<<RXEN0) | (1<<TXEN0);
+ UCSR0B = (1<<RXEN0) | (1<<TXEN0);
  //UCSR0C = (3<<UCSZ00);
-
+  
 // Used to set the GPS update-rate to 5 hz, and GPGGA and GPRMC gps-strings (Only for MKT-GPS).
 
 /*

@@ -37,6 +37,15 @@ char GPSfix = '0';
 //long lat2 = 0;
 long lats = 0;
 
+
+int updatedSpeed = 1;
+int updatedArrow = 1;
+int updatedAlt = 1;
+int updatedDist = 1;
+int updatedVolt = 1;
+int updatedCur = 1;
+int updatedSats = 1;
+
 //long lon1 = 0;
 //long lon2 = 2;
 long lons = 0;
@@ -159,10 +168,6 @@ unsigned char landed = 1;
 long altitude_num = 0;
 long altitude_num2 = 0;
 int altitude_int = 0;
-
-unsigned long flight_time = 0;
-unsigned char last_time = 0;
-unsigned char flight_timer[] = {3, 3, 3, 3, 3, 3};
 
 int avg_speed = 0;
 unsigned char avg_speedr[] = {3, 3, 3, 3, 3, 3};
@@ -435,11 +440,6 @@ void update_gps_data()
                 lonhome = lons;
                 homepos = 1;
 
-                max_los = 0;
-                max_speed = 0;
-                kmh_total = 0;
-                max_alt = 0;
-                flight_time = 0;
                 altitude_offset = altitude_num;
 
             }
@@ -595,6 +595,7 @@ void serialMSPCheck()
 {
     readIndex = 0;
     success++;
+    updatedVolt = 1;
     if (cmdMSP == MSP_RAW_GPS)
     {
         GPS_fix = read8();
@@ -605,8 +606,11 @@ void serialMSPCheck()
         GPS_numSat = read8();
         lats = GPS_latitude = read32();
         lons = GPS_longitude = read32();
-        altitude_num = GPS_altitude = read16();
-        speedkm = GPS_speed = read16()/10;
+        GPS_altitude = read16();
+        speedkm = GPS_speed = read16() / 10;
+        updatedSats = 1;
+        updatedAlt = 1;
+        updatedSpeed = 1;
     }
 
     else if (cmdMSP == MSP_COMP_GPS)
@@ -617,6 +621,8 @@ void serialMSPCheck()
         {
             arrowd += 8;
         }
+        updatedArrow = 1;
+        updatedDist = 1;
     }
     else if (cmdMSP == MSP_ATTITUDE)
     {
@@ -647,11 +653,11 @@ extern unsigned char voltager[];
 
 void serialMSPreceive()
 {
-    uint8_t c;
+    char c;
 
-    while (Serial.available() > 0)
+    while (UCSR0A & (1 << RXC0))
     {
-        c = Serial.read();
+        c = UDR0;
 
         if (c_state == IDLE)
         {
@@ -714,66 +720,34 @@ void serialMSPreceive()
 
 void blankserialRequest(uint8_t requestMSP)
 {
-    /*if (requestMSP == MSP_OSD && fontMode)
-    {
-        fontSerialRequest();
-        return;
-    }*/
+
+    uint8_t txCheckSum;
     Serial.write('$');
     Serial.write('M');
     Serial.write('<');
     Serial.write((uint8_t)0x00);
     Serial.write(requestMSP);
     Serial.write(requestMSP);
+
 }
-/*
-void fontSerialRequest()
-{
-    int16_t cindex = getNextCharToRequest();
-    uint8_t txCheckSum;
-    uint8_t txSize;
-    Serial.write('$');
-    Serial.write('M');
-    Serial.write('<');
-    txCheckSum = 0;
-    txSize = 3;
-    Serial.write(txSize);
-    txCheckSum ^= txSize;
-    Serial.write(MSP_OSD);
-    txCheckSum ^= MSP_OSD;
-    Serial.write(OSD_GET_FONT);
-    txCheckSum ^= OSD_GET_FONT;
-    Serial.write(cindex);
-    txCheckSum ^= cindex;
-    Serial.write(cindex >> 8);
-    txCheckSum ^= cindex >> 8;
-    Serial.write(txCheckSum);
-}*/
 
-
+void update_data();
 int counter = 0;
 void do_multiwii_communication()
 {
-    counter++;
-    if (counter >= 100)
-    {
-        counter = 0;
-    }
-    if (counter == 0)
-    {
-        blankserialRequest(MSP_ATTITUDE);
-    }
-    if (counter == 50 )
-    {
-        //Serial.println(Serial.available());
-        blankserialRequest(MSP_RAW_GPS);
-    }
-    if (counter == 70)
-    {
-        update_gps_data();
-    }
 
-    delay(10);
+    update_data();
+
+    if (should_process_now)
+    {
+        serialMSPCheck();
+        should_process_now = 0;
+
+    }
+    else
+    {
+        serialMSPreceive();
+    }
     //Serial.println(loopcount);
 }
 

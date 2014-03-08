@@ -162,15 +162,15 @@
   #define current_calc_line 292
 #else 
   //NTSC
-  #define toplinetext 24
-  #define toplinenumbers 34
-  #define butlinenumbers 229
-  #define timer_line 210
-  #define gps_nmea_line 15
-  #define summaryline 100
-  #define current_calc_line 240
+  #define toplinetext 14
+  #define toplinenumbers 24
+  #define butlinenumbers 170
+  #define timer_line 150 
+  #define gps_nmea_line 5
+  #define summaryline 90
+  #define current_calc_line 190
 #endif
-
+#define serial_line 200
 // Arduino
 #if (CONTROLLER == 0)
 
