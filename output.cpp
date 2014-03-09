@@ -2349,8 +2349,8 @@ void update_data()
         int first = abs(-linear_coef / angular_coef);
         for (j = 0; j < 90; j++)
         {
-            int temp = linear_coef + j * angular_coef + 100;
-            if (temp > 100 && temp < 200)
+            int temp = linear_coef + j * angular_coef + 80;
+            if (temp > 0 && temp < 250)
             {
                 horizonBuffer[j] = temp;
             }
