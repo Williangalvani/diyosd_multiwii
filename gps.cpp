@@ -41,6 +41,7 @@ long lats = 0;
 int updatedSpeed = 1;
 int updatedArrow = 1;
 int updatedAlt = 1;
+int updatedAtt = 1;
 int updatedDist = 1;
 int updatedVolt = 1;
 int updatedCur = 1;
@@ -627,9 +628,10 @@ void serialMSPCheck()
     else if (cmdMSP == MSP_ATTITUDE)
     {
         for (uint8_t i = 0; i < 2; i++)
-            MwAngle[i] = read16();
+            MwAngle[i] = (int)read16()/10;
         MwHeading = read16();
         read16();
+        updatedAtt = 1;
     }
 }
 

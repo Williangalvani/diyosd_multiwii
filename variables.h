@@ -56,7 +56,7 @@ unsigned char buffer[20];
 // Need an integer when reading large characeters (will exceed 256)
 int buffer2[12]={12,12,12,12,12,12,12,12,12,12,12,12};
 unsigned int buffer3[15];
-
+	
 
 //========================================
 // Mixed

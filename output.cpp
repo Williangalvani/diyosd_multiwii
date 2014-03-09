@@ -4,6 +4,7 @@
 #include "output.h"
 #include "variables.h"
 #include "Arduino.h"
+#include "Math.h"
 #include <avr/delay.h>
 #include <avr/pgmspace.h>
 #include <EEPROM.h>
@@ -109,6 +110,27 @@ extern unsigned char losr[];
 extern unsigned char speedkmw[5];
 extern unsigned char altitude2[10];
 extern unsigned char altituder[10];
+
+extern unsigned char voltager[];
+extern int success;
+extern unsigned int speedkm;
+extern int16_t GPS_altitude;
+
+extern int updatedSpeed ;
+extern int updatedArrow;
+extern int updatedAlt;
+extern int updatedDist;
+extern int updatedVolt;
+extern int updatedCur;
+extern int updatedSats  ;
+extern int updatedAtt  ;
+extern int MwAngle[];
+int horizon_lenght = 1;
+char horizon_sprite = 1;
+int horizon_repeat = 0;
+
+
+unsigned char horizonBuffer[90];
 unsigned char speedr[] = {1, 1, 1, 1};
 
 int current_letter = 0;
@@ -2185,6 +2207,33 @@ void print_top_numbers()
     }
 }
 
+void draw_horizon_point_at_line(int line)
+{
+    if (horizonBuffer[line] != 0)
+    {
+        _delay_loop_1(horizonBuffer[line] - horizon_repeat);
+        int i = 0;
+        if (horizon_repeat > 1)
+        {
+            horizon_sprite = 0b11111111;
+        }
+
+        for (i = 0; i < horizon_repeat + 1; i++)
+        {
+            SPDR = horizon_sprite;
+            delay5;
+        }
+    }
+
+    if (line == 43)
+    {
+        DimOn;
+    }
+    else if (line == 47)
+    {
+        DimOff;
+    }
+}
 void print_bottom_numbers()
 {
 
@@ -2237,31 +2286,30 @@ void print_bottom_numbers()
     buffer2[10] = voltager[3] << 5;
 
     screen_line = (arrowr[0] - 3) * 100 + (arrowr[1] - 3) * 10 + (arrowr[0] - 3);
+    _delay_loop_1(align_text);
 
 }
 
+
+void print_horizon()
+{
+    draw_horizon_point_at_line(line - summaryline);
+
+
+
+
+}
 int update_counter = 0;
 
-extern unsigned char voltager[];
-extern int success;
-extern unsigned int speedkm;
-extern int16_t GPS_altitude;
-
-extern int updatedSpeed ;
-extern int updatedArrow;
-extern int updatedAlt;
-extern int updatedDist;
-extern int updatedVolt;
-extern int updatedCur;
-extern int updatedSats  ;
 
 void update_data()
 {
     if (updatedVolt)
     {
-        voltager[0] = (success / 100) + 3 ;
-        voltager[1] = ((success % 100) / 10) + 3;
-        voltager[3] = ((success % 100) % 10) + 3;
+        int voltvar = MwAngle[0];
+        voltager[0] = (voltvar / 100) + 3 ;
+        voltager[1] = ((voltvar % 100) / 10) + 3;
+        voltager[3] = ((voltvar % 100) % 10) + 3;
         updatedVolt = 0;
     }
     if (updatedSats)
@@ -2297,11 +2345,80 @@ void update_data()
         altituder[1] = (GPS_altitude / 1000 + 3);
         updatedAlt = 0;
     }
+    if (updatedAtt)
+    {
+        /*
+           we are working with inverted axes here, to fuck up my brain
+           */
+        // pixel =offset + angular_coef * line
+        //offset = pixel -angular_coef*line;
+
+        double radians = radians(MwAngle[0] + 180);
+        double cossine = cos(radians);
+        float angular_coef = 1 / tan(radians);
+        float linear_coef = 45 - 45 * angular_coef;
+        int j;
+
+        //x = y*a + b
+        //y*a = -b
+        //y = -b/a
+
+        int first = abs(-linear_coef / angular_coef);
+        for (j = 0; j < 90; j++)
+        {
+            int temp = linear_coef + j * angular_coef + 100;
+            if (temp > 100 && temp < 200)
+            {
+                horizonBuffer[j] = temp;
+            }
+            else
+            {
+                horizonBuffer[j] = 0;
+            }
+        }
+        horizon_lenght = abs((int)angular_coef) % 1110;
+        int iangle = MwAngle[0];
+        /*if ( iangle == 0)
+        {
+            horizon_lenght = 100;
+            horizonBuffer[45] = 150;
+        }*/
+        horizon_repeat = horizon_lenght / 8;
+
+        if (horizon_lenght < 2)
+        {
+            horizon_lenght = 2;
+        }
+        if (!horizon_repeat)
+        {
+            horizon_sprite = (1 << horizon_lenght) - 2;
+        }
+
+        updatedAtt = 0;
+    }
 
 }
 extern int should_process_now;
 int msgcounter = 0;
 void blankserialRequest(uint8_t requestMSP);
+
+void send_serial_request()
+{
+    msgcounter++;
+    if (msgcounter >= 5)
+    {
+        blankserialRequest(MSP_COMP_GPS);
+        msgcounter = 0;
+    }
+    if (msgcounter == 0)
+    {
+        blankserialRequest(MSP_ATTITUDE);
+    }
+    if (msgcounter == 2 )
+    {
+        blankserialRequest(MSP_RAW_GPS);
+    }
+}
 
 void detectline()
 {
@@ -2312,19 +2429,7 @@ void detectline()
     if (line == serial_line)
     {
 
-        msgcounter++;
-        if (msgcounter >= 10)
-        {
-            msgcounter = 0;
-        }
-        if (msgcounter == 0)
-        {
-            blankserialRequest(MSP_ATTITUDE);
-        }
-        if (msgcounter == 5 )
-        {
-            blankserialRequest(MSP_RAW_GPS);
-        }
+        send_serial_request();
 
     }
     if (line > toplinenumbers && line < (toplinenumbers + 17))
@@ -2342,6 +2447,7 @@ void detectline()
     }
     else if (line > summaryline && line < (summaryline + 90))
     {
+        print_horizon();
         //print_summary();
     }
     else if (line > gps_nmea_line && line < (gps_nmea_line + 9))
