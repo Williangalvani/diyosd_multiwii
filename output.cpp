@@ -168,6 +168,7 @@ void write_speed()
 
     }
 }
+
 void print_altitude()
 {
     if (show_decimals == 1)
@@ -2175,7 +2176,19 @@ void print_top_numbers()
 
 void draw_horizon_point_at_line(int line)
 {
-    if (horizonBuffer[line] != 0)
+    if (line ==1 || line == 89)
+    {
+        SPDR = 0b10101010;
+        _delay_loop_1(align_text);
+        int i;
+        for (i = 0; i < 80+ 1; i++)
+        {
+            SPDR = 0b10101010;
+            delay5;
+        }
+        
+    }
+    else if (horizonBuffer[line] != 0)
     {
         _delay_loop_1(horizonBuffer[line] - horizon_repeat);
         int i = 0;
@@ -2289,7 +2302,7 @@ void update_data()
     }
     if (updatedVolt)
     {
-        int voltvar = MwAngle[0];
+        int voltvar = MwAngle[1];
         voltager[0] = (voltvar / 100) + 3 ;
         voltager[1] = ((voltvar % 100) / 10) + 3;
         voltager[3] = ((voltvar % 100) % 10) + 3;
@@ -2336,10 +2349,11 @@ void update_data()
         // pixel =offset + angular_coef * line
         //offset = pixel -angular_coef*line;
 
-        double radians = radians(MwAngle[0] + 180);
+        //int reducedPitchAngle = MwAngle[1]/1.5;
+        double radians = radians(-MwAngle[0] + 180);
         double cossine = cos(radians);
         float angular_coef = 1 / tan(radians);
-        float linear_coef = 45 - 45 * angular_coef;
+        float linear_coef = 45 - (45-MwAngle[1]) * angular_coef; 
         int j;
 
         //x = y*a + b
@@ -2349,7 +2363,7 @@ void update_data()
         int first = abs(-linear_coef / angular_coef);
         for (j = 0; j < 90; j++)
         {
-            int temp = linear_coef + j * angular_coef + 80;
+            float temp = linear_coef + j * angular_coef + 80;
             if (temp > 0 && temp < 250)
             {
                 horizonBuffer[j] = temp;
@@ -2388,19 +2402,24 @@ void blankserialRequest(uint8_t requestMSP);
 void send_serial_request()
 {
     msgcounter++;
-    if (msgcounter >= 5)
+    if (msgcounter >= 3)
     {
         blankserialRequest(MSP_COMP_GPS);
         msgcounter = 0;
     }
-    if (msgcounter == 0)
+    else if (msgcounter == 0)
     {
         blankserialRequest(MSP_ATTITUDE);
     }
-    if (msgcounter == 2 )
+    else if (msgcounter == 1 )
     {
         blankserialRequest(MSP_RAW_GPS);
-    }
+    }    
+    else if (msgcounter == 2 )
+    {
+        blankserialRequest(MSP_ANALOG);
+    }    
+
 }
 
 void detectline()
