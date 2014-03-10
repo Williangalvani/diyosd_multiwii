@@ -99,6 +99,7 @@ int horizon_repeat = 0;
 unsigned char horizonBuffer[90];
 unsigned char speedr[] = {1, 1, 1, 1};
 
+extern unsigned char avg_speedr[];
 int current_letter = 0;
 extern int temp1;
 
@@ -588,14 +589,14 @@ void print_bottom_large_numbers()
         if (screen_line > 8)
         {
             delay5
-            SPDR = letters[(('C'-64) << 3) + (screen_line - 8)];
+            SPDR = letters[(('C' - 64) << 3) + (screen_line - 8)];
             DimOn;
             delay12
 
-            SPDR = letters[(('U'-64) << 3) + (screen_line - 8)];
+            SPDR = letters[(('U' - 64) << 3) + (screen_line - 8)];
             delay13
 
-            SPDR = letters[(('R'-64) << 3) + (screen_line - 8)];
+            SPDR = letters[(('R' - 64) << 3) + (screen_line - 8)];
             delay2
         }
         else
@@ -686,14 +687,14 @@ void print_bottom_large_numbers()
 
         if (screen_line > 7)
         {
-            SPDR = letters[(('R'-64) << 3) + (screen_line - 8)];
+            SPDR = letters[(('R' - 64) << 3) + (screen_line - 8)];
             DimOn;
             delay13
 
-            SPDR = letters[(('S'-64) << 3) + (screen_line - 8)];
+            SPDR = letters[(('S' - 64) << 3) + (screen_line - 8)];
             delay15;
 
-            SPDR = letters[(('I'-64) << 3) + (screen_line - 8)];
+            SPDR = letters[(('I' - 64) << 3) + (screen_line - 8)];
             delay11
         }
         else
@@ -1378,7 +1379,7 @@ void print_time()
     {
         for (unsigned char ij = 0; ij < 11; ij++)
         {
-            buffer[ij] = time[ij] << 3;
+            //buffer[ij] = time[ij] << 3;
         }
     }
     else
@@ -1649,7 +1650,7 @@ void print_summary()
     }
     else
     {
-
+/*
         if (landed == 1)
         {
             _delay_loop_1(25);
@@ -1893,12 +1894,7 @@ void print_summary()
                 SPDR = letters[buffer[3] + (screen_line)];
                 delay13
 
-                /*
-                buffer[0] = (flight_timer[0]) << 3;
-                buffer[1] = (flight_timer[1]) << 3;
-                buffer[2] = (flight_timer[2]) << 3;
-                buffer[3] = (flight_timer[3]) << 3;
-                */
+ 
                 _delay_loop_1(20);
                 delay2
 
@@ -2043,7 +2039,7 @@ void print_summary()
 
         }
 
-
+*/
     }
 }
 
@@ -2176,17 +2172,17 @@ void print_top_numbers()
 
 void draw_horizon_point_at_line(int line)
 {
-    if (line ==1 || line == 89)
+    if (line == 1 || line == 89)
     {
         SPDR = 0b10101010;
         _delay_loop_1(align_text);
         int i;
-        for (i = 0; i < 80+ 1; i++)
+        for (i = 0; i < 80 + 1; i++)
         {
             SPDR = 0b10101010;
             delay5;
         }
-        
+
     }
     else if (horizonBuffer[line] != 0)
     {
@@ -2225,7 +2221,7 @@ void print_bottom_numbers()
     }
     else
     {
-            buffer2[0] = currentr[0] << 5;
+        buffer2[0] = currentr[0] << 5;
         buffer2[1] = currentr[1] << 5;
         buffer2[2] = currentr[3] << 5;
     }
@@ -2275,23 +2271,22 @@ void print_horizon()
 {
     draw_horizon_point_at_line(line - summaryline);
 
-
-
-
 }
 int update_counter = 0;
 
 extern uint16_t mwcurrent;
 extern uint16_t rssi;
+extern uint8_t GPS_fix;
 void update_data()
 {
     if (updatedAnalog)
     {
-        currentr[3] = (mwcurrent % 10 + 3);
-        currentr[2] = (mwcurrent % 100) / 10 + 3;
-        currentr[1] = (((mwcurrent % 1000) / 100) + 3);
-        currentr[0] = (mwcurrent / 1000 + 3);
-        
+        int curvar = MwAngle[0];
+        currentr[3] = (curvar % 10 + 3);
+        currentr[2] = (curvar % 100) / 10 + 3;
+        currentr[1] = (((curvar % 1000) / 100) + 3);
+        currentr[0] = (curvar / 1000 + 3);
+
 
         mahr[3] = (rssi % 10 + 3);
         mahr[2] = (rssi % 100) / 10 + 3;
@@ -2302,7 +2297,7 @@ void update_data()
     }
     if (updatedVolt)
     {
-        int voltvar = MwAngle[1];
+        int voltvar = success;
         voltager[0] = (voltvar / 100) + 3 ;
         voltager[1] = ((voltvar % 100) / 10) + 3;
         voltager[3] = ((voltvar % 100) % 10) + 3;
@@ -2353,7 +2348,7 @@ void update_data()
         double radians = radians(-MwAngle[0] + 180);
         double cossine = cos(radians);
         float angular_coef = 1 / tan(radians);
-        float linear_coef = 45 - (45-MwAngle[1]) * angular_coef; 
+        float linear_coef = 45 - (45 - MwAngle[1]) * angular_coef;
         int j;
 
         //x = y*a + b
@@ -2402,23 +2397,23 @@ void blankserialRequest(uint8_t requestMSP);
 void send_serial_request()
 {
     msgcounter++;
-    if (msgcounter >= 3)
+    if (msgcounter >= 4)
     {
         blankserialRequest(MSP_COMP_GPS);
         msgcounter = 0;
     }
-    else if (msgcounter == 0)
+    else if (msgcounter == 1)
     {
         blankserialRequest(MSP_ATTITUDE);
     }
-    else if (msgcounter == 1 )
-    {
-        blankserialRequest(MSP_RAW_GPS);
-    }    
     else if (msgcounter == 2 )
     {
+        blankserialRequest(MSP_RAW_GPS);
+    }
+    else if (msgcounter == 3 )
+    {
         blankserialRequest(MSP_ANALOG);
-    }    
+    }
 
 }
 
@@ -2449,8 +2444,12 @@ void detectline()
     }
     else if (line > summaryline && line < (summaryline + 90))
     {
-        print_horizon();
-        //print_summary();
+        if(homepos)
+        {
+            print_horizon();
+        }
+        //
+        print_summary();
     }
     else if (line > gps_nmea_line && line < (gps_nmea_line + 9))
     {

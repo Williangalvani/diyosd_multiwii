@@ -123,6 +123,43 @@ uint16_t GPS_speed = 0;
 int16_t GPS_directionToHome = 0;
 uint8_t GPS_numSat = 0;
 
+//========================================
+// For flight summary
+//========================================
+long max_los =0;
+unsigned char max_losr[] = {3,3,3,3};
+
+int max_speed =0;
+unsigned char max_speedr[] = {3,3,3,3};
+
+long kmh_total =0;
+unsigned char total_distancer[] = {3,3,3,3,3};
+
+long max_alt=0;
+unsigned char max_altr[] = {3,3,3,3,3,3};
+
+long altitude_num2=0;
+int altitude_int=0;
+
+unsigned long flight_time =0;
+unsigned char last_time=0;
+unsigned char flight_timer[] = {3,3,3,3,3,3};
+
+int avg_speed =0;
+unsigned char avg_speedr[] = {3,3,3,3,3,3};
+
+
+
+unsigned char test=0;
+
+  // Stores LOS characters (numbers) written to screen
+unsigned long long_buf=0;
+
+
+
+unsigned int mahkm =0;
+unsigned char mahkmr[]={3,3,3,3,3,3};  
+/////////////////////////////////////////////////////
 int success = 0;
 
 // Mode bits
@@ -193,7 +230,7 @@ void serialMSPCheck()
     updatedVolt = 1;
     if (cmdMSP == MSP_RAW_GPS)
     {
-        GPS_fix = read8();
+        GPS_fix = (int)read8();
         if (GPS_fix != 0)
         {
             GPSfix = '1';
@@ -335,6 +372,7 @@ void blankserialRequest(uint8_t requestMSP)
 void do_multiwii_communication()
 {
     update_data();
+    update_gps_data();
     if (should_process_now)
     {
         serialMSPCheck();
@@ -359,7 +397,7 @@ void gps()
     {
         Buttonpin = 6;
     }
-    //update_menu();
+    
     while (1 == 1)
     {
         do_multiwii_communication();
