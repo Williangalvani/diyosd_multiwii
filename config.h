@@ -158,6 +158,7 @@
   #define butlinenumbers 231
   #define timer_line 252
   #define gps_nmea_line 32
+  #define gpsline 70
   #define summaryline 102
   #define current_calc_line 292
 #else 
@@ -171,6 +172,8 @@
   #define current_calc_line 190
 #endif
 #define serial_line 220
+
+#define HORIZON_X_CENTER 125
 // Arduino
 #if (CONTROLLER == 0)
 

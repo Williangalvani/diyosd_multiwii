@@ -110,6 +110,7 @@ void update_gps_data()
 #define MSP_COMP_GPS             107   //out message         distance home, direction home
 #define MSP_ATTITUDE             108   //out message         2 angles 1 heading
 #define MSP_ANALOG               110
+#define MSP_ALTITUDE             109   //out message         altitude, variometer
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int MwAngle[2] = {0, 0};        // Those will hold Accelerator Angle
@@ -118,7 +119,7 @@ int16_t GPS_distanceToHome = 0;
 uint8_t GPS_fix = 0;
 int32_t GPS_latitude;
 int32_t GPS_longitude;
-int16_t GPS_altitude;
+int32_t GPS_altitude;
 uint16_t GPS_speed = 0;
 int16_t GPS_directionToHome = 0;
 uint8_t GPS_numSat = 0;
@@ -178,6 +179,7 @@ uint16_t powermeter = 0;
 uint16_t rssi = 0;
 uint16_t mwcurrent = 0;
 int32_t  MwAltitude = 0;                       // This hold barometric value
+int16_t vario = 345;
 static int16_t MwHeading = 0;
 
 
@@ -230,18 +232,21 @@ void serialMSPCheck()
     updatedVolt = 1;
     if (cmdMSP == MSP_RAW_GPS)
     {
-        GPS_fix = (int)read8();
-        if (GPS_fix != 0)
+        GPS_fix = read8();
+        if (GPS_fix == 1)
         {
             GPSfix = '1';
+        }else
+        {
+            GPSfix = '0';
         }
         GPS_numSat = read8();
         lats = GPS_latitude = read32();
         lons = GPS_longitude = read32();
-        GPS_altitude = read16();
+        //GPS_altitude = read16();
         speedkm = GPS_speed = read16() / 10;
         updatedSats = 1;
-        updatedAlt = 1;
+        //updatedAlt = 1;
         updatedSpeed = 1;
     }
 
@@ -271,6 +276,16 @@ void serialMSPCheck()
         rssi = read16();
         mwcurrent = read16();
         updatedAnalog = 1;
+    }
+        else if (cmdMSP == MSP_ALTITUDE)
+    {
+        GPS_altitude = read32()/10;
+        vario = read16();//vario, discarding
+        //powermeter = read16();
+        //rssi = read16();
+        //mwcurrent = read16();
+        updatedAnalog = 1;
+        updatedAlt= 1;
     }
 
 }
@@ -341,7 +356,6 @@ void serialMSPreceive()
             {
                 if (rcvChecksum == 0)
                 {
-                    GPSfix = '1';
                     should_process_now = 1;
                 }
                 else
