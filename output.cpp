@@ -618,8 +618,8 @@ void print_bottom_large_numbers()
         SPDR = LargeNumbers[buffer2[1] + 2 * screen_line + 1];
         delay15;
 
-        SPDR = LargeNumbers[480 + 2 * screen_line];
-        delay8
+        //SPDR = LargeNumbers[480 + 2 * screen_line];
+        //delay8
         //               SPDR = LargeNumbers[32+2*temp+1];
         //               delay13
 
@@ -627,6 +627,12 @@ void print_bottom_large_numbers()
         delay15;
 
         SPDR = LargeNumbers[buffer2[2] + 2 * screen_line + 1];
+        delay15;
+
+        SPDR = LargeNumbers[buffer2[3] + 2 * screen_line];
+        delay15;
+
+        SPDR = LargeNumbers[buffer2[3] + 2 * screen_line + 1];
         delay15;
         DimOff;
 
@@ -2217,13 +2223,15 @@ void print_bottom_numbers()
     {
         buffer2[0] = 14 << 5;
         buffer2[1] = currentr[1] << 5;
-        buffer2[2] = currentr[3] << 5;
+        buffer2[2] = currentr[2] << 5;
+        buffer2[3] = currentr[3] << 5;
     }
     else
     {
         buffer2[0] = currentr[0] << 5;
         buffer2[1] = currentr[1] << 5;
-        buffer2[2] = currentr[3] << 5;
+        buffer2[2] = currentr[2] << 5;
+        buffer2[3] = currentr[3] << 5;
     }
 
 
@@ -2277,11 +2285,12 @@ int update_counter = 0;
 extern uint16_t mwcurrent;
 extern uint16_t rssi;
 extern uint8_t GPS_fix;
+uint16_t totalmsg = 0;
 void update_data()
 {
     if (updatedAnalog)
     {
-        int curvar = MwAngle[0];
+        int curvar = totalmsg;
         currentr[3] = (curvar % 10 + 3);
         currentr[2] = (curvar % 100) / 10 + 3;
         currentr[1] = (((curvar % 1000) / 100) + 3);
@@ -2396,6 +2405,7 @@ void blankserialRequest(uint8_t requestMSP);
 
 void send_serial_request()
 {
+    totalmsg++;
     msgcounter++;
     if (msgcounter >= 4)
     {
