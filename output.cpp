@@ -2429,13 +2429,14 @@ void send_serial_request()
 
 void detectline()
 {
+    UCSR0B &= ~(1 << RXCIE0);
     little_delay // This is used to adjust to timing when using SimpleOSD instead of Arduino
 
     print_timer();
 
     if (line == serial_line)
     {
-
+        UCSR0B |= (1 << RXCIE0);
         send_serial_request();
 
     }
@@ -2481,8 +2482,10 @@ void detectline()
 
     line++;
 
+
     // Let's make sure SPI is not idling high.
     SPDR = 0b00000000;
+    UCSR0B |= (1 << RXCIE0);
 
 }
 

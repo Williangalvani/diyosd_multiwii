@@ -295,9 +295,11 @@ void serialMSPreceive()
 {
     char c;
 
-    while (UCSR0A & (1 << RXC0))
+    //while (UCSR0A & (1 << RXC0))
+    while (Serial.available())
     {
-        c = UDR0;
+        //c = UDR0;
+        c = Serial.read();
 
         if (c_state == IDLE)
         {

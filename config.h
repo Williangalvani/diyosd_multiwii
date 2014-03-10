@@ -170,7 +170,7 @@
   #define summaryline 90
   #define current_calc_line 190
 #endif
-#define serial_line 200
+#define serial_line 220
 // Arduino
 #if (CONTROLLER == 0)
 

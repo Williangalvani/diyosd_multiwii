@@ -47,18 +47,22 @@ pinMode(9,INPUT);
 
 
 // Init Serial communication. 
-//Serial.begin(BAUD);
- UBRR0H = (unsigned char) (BAUD_SETTINGS>>8);
+Serial.begin(BAUD);
+ /*UBRR0H = (unsigned char) (BAUD_SETTINGS>>8);
  UBRR0L = (unsigned char) (BAUD_SETTINGS);
- //UCSR0A = 0b0000000;
+
  UCSR0B = (1<<RXEN0) | (1<<TXEN0);
+*/
+
  //UCSR0C = (3<<UCSZ00);
+  //UCSR0A = 0b0000000;
 
 
+/*
   uint8_t h = ((F_CPU  / 4 / baud -1) / 2) >> 8;
   uint8_t l = ((F_CPU  / 4 / baud -1) / 2);
   UCSR0A  = (1<<U2X0); UBRR0H = h; UBRR0L = l; UCSR0B |= (1<<RXEN0)|(1<<TXEN0);
-  
+  */
 // Used to set the GPS update-rate to 5 hz, and GPGGA and GPRMC gps-strings (Only for MKT-GPS).
 
 /*
@@ -192,6 +196,7 @@ ISR(ANALOG_COMP_vect) {
       // 
       if (TCNT2 > 75) {
       line = 0;
+
       }  
   
  detectline(); 
