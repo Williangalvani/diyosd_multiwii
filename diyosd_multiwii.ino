@@ -207,9 +207,10 @@ ISR(ANALOG_COMP_vect) {
       line = 0;
 
       }  
- cbi(UCSR0B,RXCIE0);
+ //cbi(UCSR0B,RXCIE0);
  detectline(); 
- sbi(UCSR0B,RXCIE0);
+ //sbi(UCSR0B,RXCIE0);
+
 }
 
 

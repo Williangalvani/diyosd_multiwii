@@ -51,11 +51,11 @@ int frame = 0;
 //========================================
 // Buffers
 //========================================
-unsigned char buffer[20];
+unsigned char buffer[50];
 
 // Need an integer when reading large characeters (will exceed 256)
 int buffer2[12]={12,12,12,12,12,12,12,12,12,12,12,12};
-unsigned int buffer3[15];
+int buffer3[15];
 	
 
 //========================================
@@ -71,6 +71,8 @@ unsigned char rssir[]={3,3,3};
 unsigned char rssi_negative =0;
 
 // Numbers and letters
+
+
 
 
 #endif

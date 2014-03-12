@@ -142,13 +142,6 @@ unsigned char max_altr[] = {3,3,3,3,3,3};
 long altitude_num2=0;
 int altitude_int=0;
 
-unsigned long flight_time =0;
-unsigned char last_time=0;
-unsigned char flight_timer[] = {3,3,3,3,3,3};
-
-int avg_speed =0;
-unsigned char avg_speedr[] = {3,3,3,3,3,3};
-
 
 
 unsigned char test=0;
@@ -164,14 +157,14 @@ unsigned char mahkmr[]={3,3,3,3,3,3};
 int success = 0;
 
 // Mode bits
-uint32_t mode_armed;
-uint32_t mode_stable;
-uint32_t mode_horizon;
-uint32_t mode_baro;
-uint32_t mode_mag;
-uint32_t mode_gpshome;
-uint32_t mode_gpshold;
-uint32_t mode_osd_switch;
+uint8_t mode_armed = 1;
+uint8_t mode_stable = 1 ;
+uint8_t mode_horizon = 1;
+uint8_t mode_baro = 1;
+uint8_t mode_mag = 1;
+uint8_t mode_gpshome = 1;
+uint8_t mode_gpshold = 1;
+uint8_t mode_osd_switch = 1;
 
 int temp1;
 uint16_t vbat = 0;
@@ -369,11 +362,18 @@ void serialMSPreceive()
         }
     }
 }
+/*
+void write(uint data)
+{
+    while ( !( UCSR0A & (1 << UDRE0)) );
+    UDR0 = data;
 
+}*/
 
 
 void blankserialRequest(uint8_t requestMSP)
 {
+
 
     uint8_t txCheckSum;
     Serial.write('$');

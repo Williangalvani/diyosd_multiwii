@@ -5,6 +5,7 @@
 #include "variables.h"
 #include "Arduino.h"
 #include "Math.h"
+#include "itoa.h"
 #include <avr/delay.h>
 #include <avr/pgmspace.h>
 #include <EEPROM.h>
@@ -28,6 +29,7 @@
 #define FIVE_CHARS 5
 
 #define output_small_letter(letter) SPDR = letters[((letter - 64) << 3) + (screen_line - 8)];
+#define to_index(ch) (ch - 64) << 3;
 
 unsigned char satellites[3] = {3, 3, 3};
 unsigned char satellitesr[3] = {3, 3, 3};
@@ -113,8 +115,8 @@ extern unsigned char avg_speedr[];
 int current_letter = 0;
 unsigned char charcounter;
 
-void print_large_3(unsigned int *buffer);
-void print_large_5(unsigned int *buffer);
+void print_large_3(int *buffer);
+void print_large_5(int *buffer);
 void serialMSPCheck();
 
 void draw_arrow()
@@ -143,7 +145,7 @@ void write_speed()
 void print_altitude()
 {
 
-    _delay_loop_1(25);
+    _delay_loop_1(6);
     SPDR = LargeNumbers[buffer3[9] + 2 * screen_line];
     DimOn;
     delay13
@@ -183,7 +185,7 @@ void print_altitude()
 
 }
 
-void print_large_3(unsigned int *buffer)
+void print_large_3(int *buffer)
 {
 
     SPDR = LargeNumbers[buffer[0] + 2 * screen_line];
@@ -238,7 +240,7 @@ void print_large_4(int *buffer)
     DimOff;
 }
 
-void print_large_5(unsigned int *buffer)
+void print_large_5(int *buffer)
 {
     SPDR = LargeNumbers[buffer[0] + 2 * screen_line];
     DimOn;
@@ -340,48 +342,13 @@ void print_top_large_numbers()
         // Skriver LOS tal
 
 
-        if (buffer3[5] != 448)
-        {
-            SPDR = LargeNumbers[buffer3[5] + 2 * screen_line];
-            DimOn;
-            delay13
 
-            SPDR = LargeNumbers[buffer3[5] + 2 * screen_line + 1];
-            delay4
-        }
-        else
-        {
-            _delay_loop_1(12);
-        }
+        _delay_loop_1(8);
 
-        SPDR = LargeNumbers[buffer3[6] + 2 * screen_line];
-        DimOn;
-        delay13
+        print_large_4((int *)&buffer3[5]);
 
-        SPDR = LargeNumbers[buffer3[6] + 2 * screen_line + 1];
-        delay8
+        _delay_loop_1(1);
 
-
-        SPDR = LargeNumbers[buffer3[7] + 2 * screen_line];
-        delay15;
-
-        SPDR = LargeNumbers[buffer3[7] + 2 * screen_line + 1];
-        delay8
-
-        if (buffer3[8] != 448)
-        {
-            SPDR = LargeNumbers[buffer3[8] + 2 * screen_line];
-            delay15;
-
-            SPDR = LargeNumbers[buffer3[8] + 2 * screen_line + 1];
-            delay15;
-            DimOff;
-        }
-        else
-        {
-            DimOff;
-            _delay_loop_1(14);
-        }
 
 
         // Let's draw the arrow.
@@ -753,452 +720,41 @@ void print_summary()
 
         }
 
-
-        /*
-                if (screen_line > 80 && screen_line < 89)
-                {
-                    print_version();
-                }*/
     }
-    else
-    {
-        /*
-                if (landed == 1)
-                {
-                    _delay_loop_1(25);
-                    screen_line = line - (summaryline + 1);
-
-                    if (screen_line < 8)
-                    {
-                        _delay_loop_1(30);
-                        buffer[0] = ('M' - 64) << 3;
-                        buffer[1] = ('A' - 64) << 3;
-                        buffer[2] = ('X' - 64) << 3;
-
-                        buffer[3] = ('A' - 64) << 3;
-                        buffer[4] = ('L' - 64) << 3;
-                        buffer[5] = ('T' - 64) << 3;
-
-
-                        SPDR = letters[buffer[0] + (screen_line)];
-                        DimOn;
-                        delay14
-                        SPDR = letters[buffer[1] + (screen_line)];
-                        delay13
-                        SPDR = letters[buffer[2] + (screen_line)];
-
-
-                        _delay_loop_1(10);
-                        SPDR = letters[buffer[3] + (screen_line)];
-                        delay15;
-                        SPDR = letters[buffer[4] + (screen_line)];
-                        delay15;
-                        SPDR = letters[buffer[5] + (screen_line)];
-                        delay13
-
-                        buffer[0] = (max_altr[0]) << 3;
-                        buffer[1] = (max_altr[1]) << 3;
-                        buffer[2] = (max_altr[2]) << 3;
-                        buffer[3] = (max_altr[3]) << 3;
-                        buffer[4] = (max_altr[4]) << 3;
-
-
-                        SPDR = numbers[buffer[0] + (screen_line)];
-                        delay13
-                        SPDR = numbers[buffer[1] + (screen_line)];
-                        delay13
-                        SPDR = numbers[buffer[2] + (screen_line)];
-                        delay13
-                        SPDR = numbers[buffer[3] + (screen_line)];
-                        delay13
-
-                        SPDR = numbers[8 + (screen_line)];
-                        delay13
-
-                        SPDR = numbers[buffer[4] + (screen_line)];
-                        delay13
-                        DimOff;
-
-                    }
-
-                    if (screen_line > 10 && screen_line < 19)
-                    {
-                        screen_line = line - (summaryline + 11);
-                        _delay_loop_1(23);
-
-
-                        buffer[0] = ('M' - 64) << 3;
-                        buffer[1] = ('A' - 64) << 3;
-                        buffer[2] = ('X' - 64) << 3;
-
-                        buffer[3] = ('S' - 64) << 3;
-                        buffer[4] = ('P' - 64) << 3;
-                        buffer[5] = ('D' - 64) << 3;
-
-
-                        SPDR = letters[buffer[0] + (screen_line)];
-                        DimOn;
-                        delay13
-                        SPDR = letters[buffer[1] + (screen_line)];
-                        delay13
-                        SPDR = letters[buffer[2] + (screen_line)];
-
-
-                        _delay_loop_1(10);
-                        SPDR = letters[buffer[3] + (screen_line)];
-                        delay15;
-                        SPDR = letters[buffer[4] + (screen_line)];
-                        delay15;
-                        SPDR = letters[buffer[5] + (screen_line)];
-                        delay13
-
-
-                        buffer[0] = (max_speedr[0]) << 3;
-                        buffer[1] = (max_speedr[1]) << 3;
-                        buffer[2] = (max_speedr[2]) << 3;
-                        buffer[3] = (max_speedr[3]) << 3;
-
-                        _delay_loop_1(2);
-                        delay1
-
-                        SPDR = numbers[buffer[0] + (screen_line)];
-                        delay13
-                        SPDR = numbers[buffer[1] + (screen_line)];
-                        delay13
-                        SPDR = numbers[buffer[2] + (screen_line)];
-                        delay15;
-                        SPDR = numbers[8 + (screen_line)];
-                        delay13
-                        SPDR = numbers[buffer[3] + (screen_line)];
-                        delay13
-                        DimOff;
-
-                    }
-
-                    if (screen_line > 20 && screen_line < 29)
-                    {
-                        screen_line = line - (summaryline + 21);
-                        _delay_loop_1(19);
-
-
-                        buffer[0] = ('M' - 64) << 3;
-                        buffer[1] = ('A' - 64) << 3;
-                        buffer[2] = ('X' - 64) << 3;
-
-                        buffer[3] = ('L' - 64) << 3;
-                        buffer[4] = ('O' - 64) << 3;
-                        buffer[5] = ('S' - 64) << 3;
-
-
-                        SPDR = letters[buffer[0] + (screen_line)];
-                        DimOn;
-                        delay13
-                        SPDR = letters[buffer[1] + (screen_line)];
-                        delay13
-                        SPDR = letters[buffer[2] + (screen_line)];
-
-
-                        _delay_loop_1(10);
-                        SPDR = letters[buffer[3] + (screen_line)];
-                        delay15;
-                        SPDR = letters[buffer[4] + (screen_line)];
-                        delay15;
-                        SPDR = letters[buffer[5] + (screen_line)];
-                        delay13
-
-                        buffer[0] = (max_losr[0]) << 3;
-                        buffer[1] = (max_losr[1]) << 3;
-                        buffer[2] = (max_losr[2]) << 3;
-                        buffer[3] = (max_losr[3]) << 3;
-
-                        _delay_loop_1(2);
-                        delay2
-
-                        SPDR = numbers[buffer[0] + (screen_line)];
-                        delay13
-                        SPDR = numbers[buffer[1] + (screen_line)];
-                        delay13
-                        SPDR = numbers[buffer[2] + (screen_line)];
-                        delay13
-                        SPDR = numbers[buffer[3] + (screen_line)];
-                        delay13
-                        DimOff;
-
-                    }
-
-                    if (screen_line > 31 && screen_line < 40)
-                    {
-                        screen_line = line - (summaryline + 32);
-                        _delay_loop_1(15);
-                        delay1
-
-                        buffer[0] = ('T' - 64) << 3;
-                        buffer[1] = ('O' - 64) << 3;
-                        buffer[2] = ('T' - 64) << 3;
-
-                        buffer[3] = ('D' - 64) << 3;
-                        buffer[4] = ('I' - 64) << 3;
-                        buffer[5] = ('S' - 64) << 3;
-
-
-                        SPDR = letters[buffer[0] + (screen_line)];
-                        DimOn;
-                        delay9
-                        SPDR = letters[buffer[1] + (screen_line)];
-                        delay15;
-                        SPDR = letters[buffer[2] + (screen_line)];
-
-
-                        _delay_loop_1(10);
-                        SPDR = letters[buffer[3] + (screen_line)];
-                        delay15;
-                        SPDR = letters[buffer[4] + (screen_line)];
-                        delay15;
-                        SPDR = letters[buffer[5] + (screen_line)];
-                        delay13
-
-
-                        buffer[0] = (total_distancer[0]) << 3;
-                        buffer[1] = (total_distancer[1]) << 3;
-                        buffer[2] = (total_distancer[2]) << 3;
-                        buffer[3] = (total_distancer[3]) << 3;
-                        buffer[4] = (total_distancer[4]) << 3;
-
-                        _delay_loop_1(1);
-                        delay1
-
-                        SPDR = numbers[buffer[0] + (screen_line)];
-                        delay13
-                        SPDR = numbers[buffer[1] + (screen_line)];
-                        delay13
-
-                        SPDR = numbers[buffer[2] + (screen_line)];
-                        delay13
-                        SPDR = numbers[buffer[3] + (screen_line)];
-                        delay14
-                        SPDR = numbers[buffer[4] + (screen_line)];
-                        delay13
-                        DimOff;
-
-
-                    }
-
-                    if (screen_line > 42 && screen_line < 51)
-                    {
-                        screen_line = line - (summaryline + 43);
-                        _delay_loop_1(14);
-
-
-                        buffer[0] = ('T' - 64) << 3;
-                        buffer[1] = ('I' - 64) << 3;
-                        buffer[2] = ('M' - 64) << 3;
-                        buffer[3] = ('E' - 64) << 3;
-
-
-
-                        SPDR = letters[buffer[0] + (screen_line)];
-                        DimOn;
-                        delay13
-                        SPDR = letters[buffer[1] + (screen_line)];
-                        delay13
-                        SPDR = letters[buffer[2] + (screen_line)];
-                        delay15;
-                        SPDR = letters[buffer[3] + (screen_line)];
-                        delay13
-
-
-                        _delay_loop_1(20);
-                        delay2
-
-
-                        SPDR = numbers[buffer[0] + (screen_line)];
-                        delay13
-                        SPDR = numbers[buffer[1] + (screen_line)];
-                        delay13
-
-                        SPDR = numbers[104 + (screen_line)];
-                        delay13
-
-
-                        SPDR = numbers[buffer[2] + (screen_line)];
-                        delay13
-                        SPDR = numbers[buffer[3] + (screen_line)];
-                        delay13
-                        DimOff;
-
-                    }
-
-                    if (screen_line > 53 && screen_line < 62)
-                    {
-                        screen_line = line - (summaryline + 54);
-                        _delay_loop_1(9);
-
-                        buffer[0] = ('A' - 64) << 3;
-                        buffer[1] = ('V' - 64) << 3;
-                        buffer[2] = ('G' - 64) << 3;
-
-                        buffer[3] = ('S' - 64) << 3;
-                        buffer[4] = ('P' - 64) << 3;
-                        buffer[5] = ('D' - 64) << 3;
-
-
-                        SPDR = letters[buffer[0] + (screen_line)];
-                        DimOn;
-                        delay11
-                        SPDR = letters[buffer[1] + (screen_line)];
-                        delay15;
-                        SPDR = letters[buffer[2] + (screen_line)];
-
-
-                        _delay_loop_1(10);
-                        SPDR = letters[buffer[3] + (screen_line)];
-                        delay15;
-                        SPDR = letters[buffer[4] + (screen_line)];
-                        delay15;
-                        SPDR = letters[buffer[5] + (screen_line)];
-                        delay13
-
-
-                        buffer[0] = (avg_speedr[0]) << 3;
-                        buffer[1] = (avg_speedr[1]) << 3;
-                        buffer[2] = (avg_speedr[2]) << 3;
-                        buffer[3] = (avg_speedr[3]) << 3;
-
-                        _delay_loop_1(1);
-                        delay2
-
-                        SPDR = numbers[buffer[0] + (screen_line)];
-                        delay13
-                        SPDR = numbers[buffer[1] + (screen_line)];
-                        delay13
-
-                        SPDR = numbers[buffer[2] + (screen_line)];
-                        delay13
-
-                        SPDR = numbers[8 + (screen_line)];
-                        delay13
-
-                        SPDR = numbers[buffer[3] + (screen_line)];
-                        delay13
-                        DimOff;
-
-                    }
-
-                    if (screen_line > 64 && screen_line < 73 && 1 == 0)
-                    {
-                        screen_line = line - (summaryline + 65);
-                        _delay_loop_1(4);
-
-                        buffer[0] = ('@' - 64) << 3;
-                        buffer[1] = ('@' - 64) << 3;
-                        buffer[2] = ('@' - 64) << 3;
-
-                        buffer[3] = ('@' - 64) << 3;
-                        buffer[4] = ('@' - 64) << 3;
-                        buffer[5] = ('@' - 64) << 3;
-
-
-                        SPDR = letters[buffer[0] + (screen_line)];
-                        DimOn;
-                        delay13
-                        SPDR = letters[buffer[1] + (screen_line)];
-                        delay13
-                        SPDR = letters[buffer[2] + (screen_line)];
-
-
-                        _delay_loop_1(10);
-                        SPDR = letters[buffer[3] + (screen_line)];
-                        delay13
-                        SPDR = letters[buffer[4] + (screen_line)];
-                        delay15;
-                        SPDR = letters[buffer[5] + (screen_line)];
-                        delay13
-                        DimOff;
-
-                    }
-
-                    if (screen_line > 75 && screen_line < 84 && 1 == 0)
-                    {
-                        screen_line = line - (summaryline + 76);
-
-                        buffer[0] = ('@' - 64) << 3;
-                        buffer[1] = ('@' - 64) << 3;
-                        buffer[2] = ('@' - 64) << 3;
-
-                        buffer[3] = ('@' - 64) << 3;
-                        buffer[4] = ('@' - 64) << 3;
-                        buffer[5] = ('@' - 64) << 3;
-
-
-                        SPDR = letters[buffer[0] + (screen_line)];
-                        DimOn;
-                        delay13
-                        SPDR = letters[buffer[1] + (screen_line)];
-                        delay13
-                        SPDR = letters[buffer[2] + (screen_line)];
-
-
-                        _delay_loop_1(10);
-                        SPDR = letters[buffer[3] + (screen_line)];
-                        delay15;
-                        SPDR = letters[buffer[4] + (screen_line)];
-                        delay15;
-                        SPDR = letters[buffer[5] + (screen_line)];
-                        delay13
-                        DimOff;
-
-                    }
-
-                }
-
-        */
-    }
-}
-
-void print_gps()
-{
 
 }
 
-void print_top_numbers()
+
+void convert_to_big_numbers(unsigned char *chars, int *buffer_, char min_zeros, char digits)
 {
 
-    buffer3[0] = speedr[0] << 5;;
-    buffer3[1] = speedr[1] << 5;;
-    buffer3[2] = speedr[2] << 5;;
-    buffer3[3] = speedr[3] << 5;
-    buffer3[4] = speedr[4] << 5;
-
-
-
-    buffer3[5] = losr[0] << 5;
-    buffer3[6] = losr[1] << 5;
-    buffer3[7] = losr[2] << 5;
-    buffer3[8] = losr[3] << 5;
-
-    if (losr[0] == 3 && losr[1] == 3)
+    int i = 0;
+    for (i = 0; i < (digits - min_zeros); i++)
     {
-        buffer3[5] = 14 << 5;
-        buffer3[6] = losr[2] << 5;
-        buffer3[7] = losr[3] << 5;
-        buffer3[8] = 14 << 5;
+        if (chars[i] == 3)
+        {
+            buffer_[i] = 14 << 5;
+        }
+        else
+        {
+            break;
+        }
     }
-    else if (losr[0] == 3)
+    for (; i < digits; i++)
     {
-        buffer3[5] = 14 << 5;
-        buffer3[6] = losr[1] << 5;
-        buffer3[7] = losr[2] << 5;
-        buffer3[8] = losr[3] << 5;
+        buffer_[i] = chars[i] << 5;
     }
 
+}
 
-        buffer3[9] = altituder[0] << 5;
-        buffer3[10] = altituder[1] << 5;
-        buffer3[11] = altituder[2] << 5;
-        buffer3[12] = altituder[3] << 5;
-        buffer3[13] = altituder[4] << 5;
-        buffer3[14] = altituder[5] << 5;
 
+void render_top_numbers()
+{
+    convert_to_big_numbers(speedr, buffer3, 3, 5);
+
+    convert_to_big_numbers(losr, &buffer3[5], 3, 5);
+
+    convert_to_big_numbers(altituder, &buffer3[9], 1, 6);
 }
 
 void draw_horizon_point_at_line(int line)
@@ -1218,7 +774,7 @@ void draw_horizon_point_at_line(int line)
     else if (line <= 5 || line >= 85)
     {
         _delay_loop_1(HORIZON_X_CENTER + 9);
-        SPDR = 0b00110000;
+        SPDR = 0b11111110;
     }
     else if (horizonBuffer[line] != 0)
     {
@@ -1251,7 +807,7 @@ void print_gps_sats()
 {
     screen_line = line - (gpsline + 1);
     _delay_loop_1(17);
-    _delay_loop_1(65);
+    //_delay_loop_1(65);
 
     if (screen_line == 0)
     {
@@ -1336,59 +892,101 @@ void print_gps_sats()
         DimOff;
     }
 }
-void print_bottom_numbers()
+
+extern uint8_t mode_armed;
+extern uint8_t mode_stable;
+extern uint8_t mode_horizon;
+extern uint8_t mode_baro;
+extern uint8_t mode_mag;
+extern uint8_t mode_gpshome;
+extern uint8_t mode_gpshold;
+extern uint8_t mode_osd_switch;
+
+void print_modes_sats()
+{
+    screen_line = line - (modesline + 1);
+    _delay_loop_1(10);
+    //_delay_loop_1(65);
+    if (screen_line == 0)
+    {
+        buffer[0] = to_index('A');
+        buffer[1] = to_index('R');
+        buffer[2] = to_index('M');
+        buffer[3] = to_index('E');
+        buffer[4] = to_index('D');
+        buffer[5] = to_index(' ');
+        buffer[6] = to_index('L');
+        buffer[7] = to_index('E');
+        buffer[8] = to_index('V');
+        buffer[9] = to_index('E');
+        buffer[10] = to_index('L');
+        buffer[11] = to_index(' ');
+        buffer[12] = to_index('H');
+        buffer[13] = to_index('O');
+        buffer[14] = to_index('R');
+        buffer[15] = to_index('I');
+        buffer[16] = to_index('Z');
+        buffer[17] = to_index('O');
+        buffer[18] = to_index('N');
+        buffer[19] = to_index(' ');
+        buffer[20] = to_index('B');
+        buffer[21] = to_index('A');
+        buffer[22] = to_index('R');
+        buffer[23] = to_index('O');
+        buffer[24] = to_index(' ');
+        buffer[25] = to_index('M');
+        buffer[26] = to_index('A');
+        buffer[27] = to_index('G');
+        buffer[28] = to_index(' ');
+        buffer[29] = to_index('R');
+        buffer[30] = to_index('T');
+        buffer[31] = to_index('H');
+        buffer[32] = to_index(' ');
+        buffer[33] = to_index('G');
+        buffer[34] = to_index('P');
+        buffer[35] = to_index('S');
+        buffer[36] = to_index('H');
+        buffer[37] = to_index('O');
+        buffer[38] = to_index('L');
+        buffer[39] = to_index('D');
+
+    }
+    else
+    {
+
+#define delaybetweenchars 2
+#define delaybetweenwords 3
+        DimOn;
+        unsigned char ij;
+        if (mode_armed)
+        {
+            for (ij = 0; ij <= 39; ij++)
+            {
+                SPDR = letters[buffer[ij] + (screen_line)];
+                _delay_loop_1(delaybetweenchars);
+            }
+            _delay_loop_1(delaybetweenwords);
+
+        }
+
+
+        DimOff;
+
+    }
+
+}
+
+
+
+
+void render_bottom_numbers()
 {
 
     _delay_loop_1(align_text);
-    if (currentr[0] == 3)
-    {
-        buffer2[0] = 14 << 5;
-        buffer2[1] = currentr[1] << 5;
-        buffer2[2] = currentr[2] << 5;
-        buffer2[3] = currentr[3] << 5;
-    }
-    else
-    {
-        buffer2[0] = currentr[0] << 5;
-        buffer2[1] = currentr[1] << 5;
-        buffer2[2] = currentr[2] << 5;
-        buffer2[3] = currentr[3] << 5;
-    }
+    convert_to_big_numbers(currentr, buffer2, 3, 4);
+    convert_to_big_numbers(mahr, &buffer2[4], 1, 4);
+    convert_to_big_numbers(text_buffer_bottom_mid, &buffer2[8], 1, 4);
 
-
-    if (mahr[0] == 3 && mahr[1] == 3 && mahr[2] == 3)
-    {
-        buffer2[4] = 14 << 5;
-        buffer2[5] = 14 << 5;
-        buffer2[6] = 14 << 5;
-        buffer2[7] = mahr[3] << 5;
-    }
-    else if (mahr[0] == 3 && mahr[1] == 3)
-    {
-        buffer2[4] = 14 << 5;
-        buffer2[5] = 14 << 5;
-        buffer2[6] = mahr[2] << 5;
-        buffer2[7] = mahr[3] << 5;
-    }
-    else if (mahr[0] == 3)
-    {
-        buffer2[4] = 14 << 5;
-        buffer2[5] = mahr[1] << 5;
-        buffer2[6] = mahr[2] << 5;
-        buffer2[7] = mahr[3] << 5;
-    }
-    else
-    {
-        buffer2[4] = mahr[0] << 5;
-        buffer2[5] = mahr[1] << 5;
-        buffer2[6] = mahr[2] << 5;
-        buffer2[7] = mahr[3] << 5;
-    }
-
-    buffer2[8] = text_buffer_bottom_mid[0] << 5;
-    buffer2[9] = text_buffer_bottom_mid[1] << 5;
-    buffer2[10] = text_buffer_bottom_mid[2] << 5;
-    buffer2[11] = text_buffer_bottom_mid[3] << 5;
 
 
     screen_line = (arrowr[0] - 3) * 100 + (arrowr[1] - 3) * 10 + (arrowr[0] - 3);
@@ -1396,14 +994,40 @@ void print_bottom_numbers()
 
 }
 
+unsigned char extracted_digits[] = {0,0,0,0,0,0};
+int last_converted;
+
+
 char extract_digit(int number, char char_number)
 {
-    // example:
-    // number is 123456
-    // want number 3,
-    // extract_digit(12345,4) returns 3
+    int i = 0;
+    
+    if (number == last_converted)
+    {
+        return extracted_digits[char_number];
+    }
+    else
+    {
+        extracted_digits[0] = 0;
+        extracted_digits[1] = 0;
+        extracted_digits[2] = 0;
+        extracted_digits[3] = 0;
+        extracted_digits[4] = 0;
+        extracted_digits[5] = 0;
+        last_converted = number;
+        
+        while(number>10)
+        {
+            extracted_digits[i] = number % 10;
+            i++;
+            number /= 10;
+        }
+    }
+    extracted_digits[i] = number;
 
-    return number % (int)(pow(10, char_number + 1) ) / (int)(pow(10, (char_number)));
+    return extracted_digits[char_number];
+
+
     //return char_number;
 }
 
@@ -1419,7 +1043,7 @@ void copy_to_buffer(int var, unsigned char *buffera, int digits, int is_decimal)
         buffera[0] = 0;
         index++;
         var = abs(var);
-        is_negative=1;
+        is_negative = 1;
     }
 
     int chars = digits - index;
@@ -1610,14 +1234,14 @@ void send_serial_request()
 
 void detectline()
 {
-    UCSR0B &= ~(1 << RXCIE0);
+    //UCSR0B &= ~(1 << RXCIE0);
     little_delay // This is used to adjust to timing when using SimpleOSD instead of Arduino
 
 
 
     if (line == serial_line)
     {
-        UCSR0B |= (1 << RXCIE0);
+        //UCSR0B |= (1 << RXCIE0);
         send_serial_request();
 
     }
@@ -1628,6 +1252,10 @@ void detectline()
     else if (line > gpsline && line < (gpsline + 9 ))
     {
         print_gps_sats();
+    }
+    else if (line > modesline && line < (modesline + 9 ))
+    {
+        print_modes_sats();
     }
 
     else if (line > butlinenumbers && line < (butlinenumbers + 17))
@@ -1651,14 +1279,14 @@ void detectline()
     }*/
     else if (line == toplinenumbers)
     {
-        print_top_numbers();
+        render_top_numbers();
     }    // ============================================================
     // Buttom line text
     // ============================================================
 
     else if (line == butlinenumbers)
     {
-        print_bottom_numbers();
+        render_bottom_numbers();
     }
 
     //else if (line >= current_calc_line && line <= current_calc_line+20)
@@ -1668,7 +1296,7 @@ void detectline()
 
     // Let's make sure SPI is not idling high.
     SPDR = 0b00000000;
-    UCSR0B |= (1 << RXCIE0);
+   // UCSR0B |= (1 << RXCIE0);
 
 }
 

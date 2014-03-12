@@ -151,26 +151,18 @@
 //========================================================================
 
 
-#if (video_system == 0)
-  // PAL
+
   #define toplinetext 41
   #define toplinenumbers 51
   #define butlinenumbers 231
   #define timer_line 252
   #define gps_nmea_line 32
   #define gpsline 70
+  #define modesline 85
   #define summaryline 102
   #define current_calc_line 292
-#else 
-  //NTSC
-  #define toplinetext 14
-  #define toplinenumbers 24
-  #define butlinenumbers 170
-  #define timer_line 150 
-  #define gps_nmea_line 5
-  #define summaryline 90
-  #define current_calc_line 190
-#endif
+
+
 #define serial_line 220
 
 #define HORIZON_X_CENTER 125
