@@ -36,7 +36,7 @@ long losx = 0;
 // Variables to store home position:
 long lathome = 0;
 long lonhome = 0;
-long los = 1234;
+long los = 0;
 // Direction home:
 int arrowd;
 
@@ -64,7 +64,7 @@ long altitude_offset = 0;
 int altitude_negative = 0;
 
 unsigned char landed = 1;
-long altitude_num = 1234;
+long altitude_num = 0;
 unsigned char loadbar[] = {29, 27, 27, 27, 27, 27, 27, 27, 27, 28};
 unsigned char losr[] = {1, 1, 1, 1}; // Stores LOS characters (numbers) written to screen
 unsigned char arrowr[] = {3, 3, 3};
@@ -105,7 +105,7 @@ void update_gps_data()
 }
 
 /////////////////////////MULTIWII CODE
-
+#define MSP_STATUS               101   //out message         cycletime & errors_count & sensor present & box activation & current setting number
 #define MSP_RAW_GPS              106   //out message         fix, numsat, lat, lon, alt, speed, ground course
 #define MSP_COMP_GPS             107   //out message         distance home, direction home
 #define MSP_ATTITUDE             108   //out message         2 angles 1 heading
@@ -119,7 +119,7 @@ int16_t GPS_distanceToHome = 0;
 uint8_t GPS_fix = 0;
 int32_t GPS_latitude;
 int32_t GPS_longitude;
-int32_t GPS_altitude = 1234;
+int32_t GPS_altitude = 0;
 uint16_t GPS_speed = 0;
 int16_t GPS_directionToHome = 0;
 uint8_t GPS_numSat = 0;
@@ -127,32 +127,32 @@ uint8_t GPS_numSat = 0;
 //========================================
 // For flight summary
 //========================================
-long max_los =0;
-unsigned char max_losr[] = {3,3,3,3};
+long max_los = 0;
+unsigned char max_losr[] = {3, 3, 3, 3};
 
-int max_speed =0;
-unsigned char max_speedr[] = {3,3,3,3};
+int max_speed = 0;
+unsigned char max_speedr[] = {3, 3, 3, 3};
 
-long kmh_total =0;
-unsigned char total_distancer[] = {3,3,3,3,3};
+long kmh_total = 0;
+unsigned char total_distancer[] = {3, 3, 3, 3, 3};
 
-long max_alt=0;
-unsigned char max_altr[] = {3,3,3,3,3,3};
+long max_alt = 0;
+unsigned char max_altr[] = {3, 3, 3, 3, 3, 3};
 
-long altitude_num2=0;
-int altitude_int=0;
-
-
-
-unsigned char test=0;
-
-  // Stores LOS characters (numbers) written to screen
-unsigned long long_buf=0;
+long altitude_num2 = 0;
+int altitude_int = 0;
 
 
 
-unsigned int mahkm =0;
-unsigned char mahkmr[]={3,3,3,3,3,3};  
+unsigned char test = 0;
+
+// Stores LOS characters (numbers) written to screen
+unsigned long long_buf = 0;
+
+
+
+unsigned int mahkm = 0;
+unsigned char mahkmr[] = {3, 3, 3, 3, 3, 3};
 /////////////////////////////////////////////////////
 int success = 0;
 
@@ -166,13 +166,23 @@ uint8_t mode_gpshome = 1;
 uint8_t mode_gpshold = 1;
 uint8_t mode_osd_switch = 1;
 
+#define STABLEMODE     1//0b00000001
+#define BAROMODE       2//0b00000010
+#define MAGMODE        4//0b00000100
+#define BOXCAMSTAB     8
+#define BOXCAMTRIG    16
+#define ARMEDMODE     32
+#define GPSHOMEMODE   64//0b00001000
+#define GPSHOLDMODE  128//0b00010000
+
+
 int temp1;
 uint16_t vbat = 0;
 uint16_t powermeter = 0;
 uint16_t rssi = 0;
 uint16_t mwcurrent = 0;
 int32_t  MwAltitude = 0;                       // This hold barometric value
-int16_t vario = 345;
+int16_t vario = 0;
 static int16_t MwHeading = 0;
 
 
@@ -229,7 +239,8 @@ void serialMSPCheck()
         if (GPS_fix == 1)
         {
             GPSfix = '1';
-        }else
+        }
+        else
         {
             GPSfix = '0';
         }
@@ -270,17 +281,30 @@ void serialMSPCheck()
         mwcurrent = read16();
         updatedAnalog = 1;
     }
-        else if (cmdMSP == MSP_ALTITUDE)
+    else if (cmdMSP == MSP_ALTITUDE)
     {
-        GPS_altitude = int(read32())/10;
+        GPS_altitude = int(read32()) / 10;
         vario = read16();//vario, discarding
         //powermeter = read16();
         //rssi = read16();
         //mwcurrent = read16();
         updatedAnalog = 1;
-        updatedAlt= 1;
+        updatedAlt = 1;
     }
+    else if (cmdMSP == MSP_STATUS)
+    {
+        read16();
+        read16();
+        read16();
+        int32_t mode = read32();
+        mode_stable = mode&STABLEMODE;
+        mode_gpshold = mode&GPSHOLDMODE;
+        mode_gpshome = mode&GPSHOMEMODE;
+        mode_mag = mode&MAGMODE;
+        mode_baro = mode&BAROMODE;
+        mode_armed = mode&ARMEDMODE;
 
+    }
 }
 
 // End of decoded received commands from MultiWii
@@ -413,7 +437,7 @@ void gps()
     {
         Buttonpin = 6;
     }
-    
+
     while (1 == 1)
     {
         do_multiwii_communication();

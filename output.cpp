@@ -15,6 +15,7 @@
 #define True 1
 #define False 0
 
+#define MSP_STATUS               101   //out message         cycletime & errors_count & sensor present & box activation & current setting number
 #define MSP_RAW_GPS              106   //out message         fix, numsat, lat, lon, alt, speed, ground course
 #define MSP_COMP_GPS             107   //out message         distance home, direction home
 #define MSP_ATTITUDE             108   //out message         2 angles 1 heading
@@ -179,6 +180,12 @@ void print_altitude()
     delay15;
 
     SPDR = LargeNumbers[buffer3[13] + 2 * screen_line + 1];
+    delay15;
+
+    SPDR = LargeNumbers[buffer3[14] + 2 * screen_line];
+    delay15;
+
+    SPDR = LargeNumbers[buffer3[14] + 2 * screen_line + 1];
     delay15;
     DimOff;
 
@@ -780,6 +787,7 @@ void draw_horizon_point_at_line(int line)
     {
 
         _delay_loop_1(horizonBuffer[line] - horizon_repeat);
+        
         int i = 0;
         if (horizon_repeat > 1)
         {
@@ -791,6 +799,9 @@ void draw_horizon_point_at_line(int line)
             SPDR = horizon_sprite;
             delay5;
         }
+        DimOn;
+        delay5;
+        DimOff;
     }
 
     if (line == 43)
@@ -960,7 +971,7 @@ void print_modes_sats()
         unsigned char ij;
         if (mode_armed)
         {
-            for (ij = 0; ij <= 39; ij++)
+            for (ij = 0; ij <= 4; ij++)
             {
                 SPDR = letters[buffer[ij] + (screen_line)];
                 _delay_loop_1(delaybetweenchars);
@@ -968,6 +979,70 @@ void print_modes_sats()
             _delay_loop_1(delaybetweenwords);
 
         }
+        if (mode_stable)
+        {
+            for (ij = 6; ij <= 10; ij++)
+            {
+                SPDR = letters[buffer[ij] + (screen_line)];
+                _delay_loop_1(delaybetweenchars);
+            }
+            _delay_loop_1(delaybetweenwords);
+
+        }
+        if (mode_horizon)
+        {
+            for (ij = 12; ij <= 18; ij++)
+            {
+                SPDR = letters[buffer[ij] + (screen_line)];
+                _delay_loop_1(delaybetweenchars);
+            }
+            _delay_loop_1(delaybetweenwords);
+
+        }
+        if (mode_baro)
+        {
+            for (ij = 20; ij <= 23; ij++)
+            {
+                SPDR = letters[buffer[ij] + (screen_line)];
+                _delay_loop_1(delaybetweenchars);
+                delay3;
+            }
+            _delay_loop_1(delaybetweenwords);
+
+        }
+        if (mode_mag)
+        {
+            for (ij = 25; ij <= 27; ij++)
+            {
+                SPDR = letters[buffer[ij] + (screen_line)];
+                _delay_loop_1(delaybetweenchars);
+                delay5;
+            }
+            _delay_loop_1(delaybetweenwords);
+
+        }        
+        if (mode_gpshome)
+        {
+            for (ij = 29; ij <= 31; ij++)
+            {
+                SPDR = letters[buffer[ij] + (screen_line)];
+                _delay_loop_1(delaybetweenchars);
+                delay5;
+            }
+            _delay_loop_1(delaybetweenwords);
+
+        }
+        if (mode_gpshold)
+        {
+            for (ij = 33; ij <= 39; ij++)
+            {
+                SPDR = letters[buffer[ij] + (screen_line)];
+                _delay_loop_1(delaybetweenchars);
+            }
+            _delay_loop_1(delaybetweenwords);
+
+        }
+
 
 
         DimOff;
@@ -994,14 +1069,14 @@ void render_bottom_numbers()
 
 }
 
-unsigned char extracted_digits[] = {0,0,0,0,0,0};
+unsigned char extracted_digits[] = {0, 0, 0, 0, 0, 0};
 int last_converted;
 
 
 char extract_digit(int number, char char_number)
 {
     int i = 0;
-    
+
     if (number == last_converted)
     {
         return extracted_digits[char_number];
@@ -1015,8 +1090,8 @@ char extract_digit(int number, char char_number)
         extracted_digits[4] = 0;
         extracted_digits[5] = 0;
         last_converted = number;
-        
-        while(number>10)
+
+        while (number > 10)
         {
             extracted_digits[i] = number % 10;
             i++;
@@ -1133,7 +1208,7 @@ void update_data()
     }
     if (updatedAlt)
     {
-        copy_to_buffer(GPS_altitude, altituder, 5 , AS_INTEGER);
+        copy_to_buffer(GPS_altitude, altituder, 6 , AS_INTEGER);
         /*
         altituder[4] =  (GPS_altitude % 10 + 3);
         altituder[3] = (GPS_altitude % 100) / 10 + 3;
@@ -1161,10 +1236,11 @@ void update_data()
         //y = -b/a
 
         int first = abs(-linear_coef / angular_coef);
+        horizon_lenght = (abs((int)angular_coef)) * 2;
         for (j = 4; j < 86; j++)
         {
             float temp = linear_coef + j * angular_coef + HORIZON_X_CENTER - 45;
-            if (temp > 0 && temp < 250)
+            if (temp > 0 && temp + horizon_lenght < 250)
             {
                 horizonBuffer[j] = temp;
             }
@@ -1173,14 +1249,13 @@ void update_data()
                 horizonBuffer[j] = 0;
             }
         }
-        horizon_lenght = (abs((int)angular_coef)) * 2;
         int roll = MwAngle[0];
         int pitch = MwAngle[1];
         if ( roll == 0 && pitch < 43 && pitch > -43  )
         {
             horizon_lenght = 350;
-            horizonBuffer[45 - pitch] = 50;
-            horizonBuffer[45 - pitch + 1] = 50;
+            horizonBuffer[45 - pitch] = 70;
+            horizonBuffer[45 - pitch + 1] = 70;
         }
         if (horizon_lenght > 350)
         {
@@ -1208,7 +1283,7 @@ void send_serial_request()
 {
     totalmsg++;
     msgcounter++;
-    if (msgcounter >= 5)
+    if (msgcounter >= 6)
     {
         blankserialRequest(MSP_COMP_GPS);
         msgcounter = 0;
@@ -1228,6 +1303,10 @@ void send_serial_request()
     else if (msgcounter == 4 )
     {
         blankserialRequest(MSP_ALTITUDE);
+    }
+    else if (msgcounter == 5 )
+    {
+        blankserialRequest(MSP_STATUS);
     }
 
 }
@@ -1296,7 +1375,7 @@ void detectline()
 
     // Let's make sure SPI is not idling high.
     SPDR = 0b00000000;
-   // UCSR0B |= (1 << RXCIE0);
+    // UCSR0B |= (1 << RXCIE0);
 
 }
 
