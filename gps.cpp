@@ -64,7 +64,7 @@ long altitude_offset = 0;
 int altitude_negative = 0;
 
 unsigned char landed = 1;
-long altitude_num = 0;
+long altitude_num = 1234;
 unsigned char loadbar[] = {29, 27, 27, 27, 27, 27, 27, 27, 27, 28};
 unsigned char losr[] = {1, 1, 1, 1}; // Stores LOS characters (numbers) written to screen
 unsigned char arrowr[] = {3, 3, 3};
@@ -119,7 +119,7 @@ int16_t GPS_distanceToHome = 0;
 uint8_t GPS_fix = 0;
 int32_t GPS_latitude;
 int32_t GPS_longitude;
-int32_t GPS_altitude;
+int32_t GPS_altitude = 1234;
 uint16_t GPS_speed = 0;
 int16_t GPS_directionToHome = 0;
 uint8_t GPS_numSat = 0;
@@ -194,7 +194,7 @@ static uint8_t rcvChecksum;
 static uint8_t readIndex;
 
 int should_process_now = 0;
-extern unsigned char voltager[];
+extern unsigned char text_buffer_bottom_mid[];
 int counter = 0;
 
 
@@ -243,7 +243,7 @@ void serialMSPCheck()
         GPS_numSat = read8();
         lats = GPS_latitude = read32();
         lons = GPS_longitude = read32();
-        //GPS_altitude = read16();
+        read16();
         speedkm = GPS_speed = read16() / 10;
         updatedSats = 1;
         //updatedAlt = 1;
@@ -279,7 +279,7 @@ void serialMSPCheck()
     }
         else if (cmdMSP == MSP_ALTITUDE)
     {
-        GPS_altitude = read32()/10;
+        GPS_altitude = int(read32())/10;
         vario = read16();//vario, discarding
         //powermeter = read16();
         //rssi = read16();

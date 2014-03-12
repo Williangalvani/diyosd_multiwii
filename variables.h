@@ -32,7 +32,7 @@ int loopcount=0;
 int current=0;
 
 unsigned char currentr[] = {3,3,3,3,3}; // Stores current characters (numbers) written to screen
-unsigned char voltager[] = {3,3,3,3,3}; // Stores current characters (numbers) written to screen
+unsigned char text_buffer_bottom_mid[] = {3,3,3,3,3}; // Stores current characters (numbers) written to screen
 int bat_volt =0;
 
 long mah = 0;

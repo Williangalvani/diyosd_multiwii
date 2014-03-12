@@ -19,9 +19,18 @@
 #include "output.h"
 #include "gps.h"
 
+
 #include <avr/delay.h>
 #include <avr/pgmspace.h>
 #include <EEPROM.h>
+
+
+#ifndef cbi
+#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
+#endif
+#ifndef sbi
+#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+#endif 
 
 extern int line;
 
@@ -198,8 +207,9 @@ ISR(ANALOG_COMP_vect) {
       line = 0;
 
       }  
-  
+ cbi(UCSR0B,RXCIE0);
  detectline(); 
+ sbi(UCSR0B,RXCIE0);
 }
 
 
