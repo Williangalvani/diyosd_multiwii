@@ -12,10 +12,6 @@
 #include <math.h>
 
 
-unsigned char Buttonpin = Buttonpin_;
-
-
-
 //==================================
 // Decleration for GPS-variables
 //==================================
@@ -57,7 +53,7 @@ char move_arrow_count = 0;
 unsigned char menu = 1;
 
 unsigned int speedkm = 0;
-unsigned char altitude2[10] = {1, 1, 1, 1, 1, 1};
+
 unsigned char altituder[10] = {1, 1, 1, 1, 1, 1, 1, 1};
 
 long altitude_offset = 0;
@@ -95,13 +91,10 @@ void update_gps_data()
                 lathome = lats;
                 lonhome = lons;
                 homepos = 1;
-
                 altitude_offset = altitude_num;
-
             }
         }
     }
-
 }
 
 /////////////////////////MULTIWII CODE
@@ -124,37 +117,11 @@ uint16_t GPS_speed = 0;
 int16_t GPS_directionToHome = 0;
 uint8_t GPS_numSat = 0;
 
-//========================================
-// For flight summary
-//========================================
-long max_los = 0;
-unsigned char max_losr[] = {3, 3, 3, 3};
 
-int max_speed = 0;
-unsigned char max_speedr[] = {3, 3, 3, 3};
-
-long kmh_total = 0;
-unsigned char total_distancer[] = {3, 3, 3, 3, 3};
-
-long max_alt = 0;
-unsigned char max_altr[] = {3, 3, 3, 3, 3, 3};
 
 long altitude_num2 = 0;
-int altitude_int = 0;
-
-
-
-unsigned char test = 0;
-
-// Stores LOS characters (numbers) written to screen
-unsigned long long_buf = 0;
-
-
-
-unsigned int mahkm = 0;
-unsigned char mahkmr[] = {3, 3, 3, 3, 3, 3};
 /////////////////////////////////////////////////////
-int success = 0;
+int received_messages = 0;
 
 // Mode bits
 uint8_t mode_armed = 1;
@@ -166,14 +133,16 @@ uint8_t mode_gpshome = 1;
 uint8_t mode_gpshold = 1;
 uint8_t mode_osd_switch = 1;
 
-#define STABLEMODE     1//0b00000001
-#define BAROMODE       2//0b00000010
-#define MAGMODE        4//0b00000100
-#define BOXCAMSTAB     8
-#define BOXCAMTRIG    16
-#define ARMEDMODE     32
-#define GPSHOMEMODE   64//0b00001000
-#define GPSHOLDMODE  128//0b00010000
+
+#define ARMEDMODE    1 //0b00000001
+#define STABLEMODE   2//0b00000010
+#define HORIZONMODE  4//0b00000100
+#define BAROMODE     8
+#define MAGMODE      16
+#define HEADFREEMODE 32
+#define HEADFREEADJ  64
+#define GPSHOMEMODE  128//0b00001000
+#define GPSHOLDMODE  256//0b00010000
 
 
 int temp1;
@@ -231,7 +200,7 @@ uint8_t read8()
 void serialMSPCheck()
 {
     readIndex = 0;
-    success++;
+    received_messages++;
     updatedVolt = 1;
     if (cmdMSP == MSP_RAW_GPS)
     {
@@ -297,12 +266,13 @@ void serialMSPCheck()
         read16();
         read16();
         int32_t mode = read32();
-        mode_stable = mode&STABLEMODE;
-        mode_gpshold = mode&GPSHOLDMODE;
-        mode_gpshome = mode&GPSHOMEMODE;
-        mode_mag = mode&MAGMODE;
-        mode_baro = mode&BAROMODE;
-        mode_armed = mode&ARMEDMODE;
+        mode_stable = mode & STABLEMODE;
+        mode_horizon = mode & HORIZONMODE;
+        mode_gpshold = mode & GPSHOLDMODE;
+        mode_gpshome = mode & GPSHOMEMODE;
+        mode_mag = mode & MAGMODE;
+        mode_baro = mode & BAROMODE;
+        mode_armed = mode & ARMEDMODE;
 
     }
 }
@@ -386,13 +356,6 @@ void serialMSPreceive()
         }
     }
 }
-/*
-void write(uint data)
-{
-    while ( !( UCSR0A & (1 << UDRE0)) );
-    UDR0 = data;
-
-}*/
 
 
 void blankserialRequest(uint8_t requestMSP)
@@ -428,15 +391,8 @@ void do_multiwii_communication()
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
-
 void gps()
 {
-    if (CONTROLLER == 1)
-    {
-        Buttonpin = 6;
-    }
 
     while (1 == 1)
     {

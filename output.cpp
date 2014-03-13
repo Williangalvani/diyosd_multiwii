@@ -5,7 +5,6 @@
 #include "variables.h"
 #include "Arduino.h"
 #include "Math.h"
-#include "itoa.h"
 #include <avr/delay.h>
 #include <avr/pgmspace.h>
 #include <EEPROM.h>
@@ -32,41 +31,25 @@
 #define output_small_letter(letter) SPDR = letters[((letter - 64) << 3) + (screen_line - 8)];
 #define to_index(ch) (ch - 64) << 3;
 
-unsigned char satellites[3] = {3, 3, 3};
 unsigned char satellitesr[3] = {3, 3, 3};
-
-
-extern unsigned char align_text;
-extern unsigned char flight_timer[];
-
-extern unsigned char show_plane_pos;
-extern unsigned char show_mah_km;
-extern unsigned char mahkmr[];
-extern int mah_alarm;
-extern int frame;
-extern int homehead_r[];
-
-extern long los;
-extern int los_alarm;
-
+extern unsigned char align_text;            // delay after hsync interrupt to print text on screen
+extern long los;           // home distance
 extern long altitude_num2;
-extern int alt_alarm;
-extern unsigned char show_decimals;
-extern int arrowd;
-;
-extern int volt_alarm;
+extern int arrowd;  // arrow direction
+
 
 extern int menuon;
-extern char move_arrow_count;
+
 extern unsigned char menupos;
 extern unsigned char menu;
 extern unsigned char altitude_offset_on;
-extern char GPSbuffer[100];
-extern char homepos;
 
+extern char homepos;
 extern char GPSfix;
 extern uint8_t GPS_numSat;
 extern int homeposcount;
+
+/////////////////////////////// summary and menu //////////////
 extern unsigned char test;
 extern unsigned char loadbar[];
 extern unsigned char time[14];
@@ -75,17 +58,14 @@ extern unsigned char max_altr[];
 extern unsigned char max_speedr[];
 extern unsigned char max_losr[];
 extern unsigned char total_distancer[];
+////////////////////////////////////////////////////////////////
+
 extern int current_num;
 extern unsigned char arrowr[];
 extern int altitude_negative;
 extern unsigned char avg_speedr[];
-extern int latitude[15];
-extern unsigned char latitude_dir;
-extern unsigned char longitude_dir;
-extern int longitude[15];
 extern unsigned char losr[];
-extern unsigned char speedkmw[5];
-extern unsigned char altitude2[10];
+
 extern unsigned char altituder[10];
 
 extern unsigned char text_buffer_bottom_mid[];
@@ -133,14 +113,9 @@ void draw_arrow()
 
 void write_speed()
 {
-
     print_large_5(buffer3);
     delay15;
     DimOff
-    //_delay_loop_1(25);
-
-
-
 }
 
 void print_altitude()
@@ -188,8 +163,6 @@ void print_altitude()
     SPDR = LargeNumbers[buffer3[14] + 2 * screen_line + 1];
     delay15;
     DimOff;
-
-
 }
 
 void print_large_3(int *buffer)
@@ -211,7 +184,6 @@ void print_large_3(int *buffer)
     delay15;
 
     SPDR = LargeNumbers[buffer[2] + 2 * screen_line + 1];
-
 }
 
 void print_large_4(int *buffer)
@@ -338,17 +310,8 @@ void print_top_large_numbers()
     {
 
         _delay_loop_1(3);
-
-        // Writes Speed
-
         write_speed();
-
-        // Here should be time to update the buffer for the arrow
         buffer2[11] = arrowd << 5;
-
-        // Skriver LOS tal
-
-
 
         _delay_loop_1(8);
 
@@ -356,13 +319,7 @@ void print_top_large_numbers()
 
         _delay_loop_1(1);
 
-
-
-        // Let's draw the arrow.
-
         draw_arrow();
-
-        // Writes ALT
 
         print_altitude();
     }
@@ -787,7 +744,7 @@ void draw_horizon_point_at_line(int line)
     {
 
         _delay_loop_1(horizonBuffer[line] - horizon_repeat);
-        
+
         int i = 0;
         if (horizon_repeat > 1)
         {
@@ -851,15 +808,11 @@ void print_gps_sats()
             buffer[12] = ('N' - 64) << 3;
             buffer[13] = ('O' - 64) << 3;
             buffer[14] = ('@' - 64) << 3;
-
-
         }
 
     }
     else
     {
-
-
         DimOn;
         for (unsigned char ij = 0; ij < 3; ij++)
         {
@@ -881,7 +834,6 @@ void print_gps_sats()
 
         /////////////now the fix///////////////
         _delay_loop_1(10);
-
 
         DimOn;
         for (unsigned char ij = 5; ij < 12; ij++)
@@ -912,6 +864,12 @@ extern uint8_t mode_mag;
 extern uint8_t mode_gpshome;
 extern uint8_t mode_gpshold;
 extern uint8_t mode_osd_switch;
+
+
+
+#define delaybetweenchars 2
+#define delaybetweenwords 3
+
 
 void print_modes_sats()
 {
@@ -964,9 +922,6 @@ void print_modes_sats()
     }
     else
     {
-
-#define delaybetweenchars 2
-#define delaybetweenwords 3
         DimOn;
         unsigned char ij;
         if (mode_armed)
@@ -1020,7 +975,7 @@ void print_modes_sats()
             }
             _delay_loop_1(delaybetweenwords);
 
-        }        
+        }
         if (mode_gpshome)
         {
             for (ij = 29; ij <= 31; ij++)
@@ -1042,13 +997,8 @@ void print_modes_sats()
             _delay_loop_1(delaybetweenwords);
 
         }
-
-
-
         DimOff;
-
     }
-
 }
 
 
@@ -1061,8 +1011,6 @@ void render_bottom_numbers()
     convert_to_big_numbers(currentr, buffer2, 3, 4);
     convert_to_big_numbers(mahr, &buffer2[4], 1, 4);
     convert_to_big_numbers(text_buffer_bottom_mid, &buffer2[8], 1, 4);
-
-
 
     screen_line = (arrowr[0] - 3) * 100 + (arrowr[1] - 3) * 10 + (arrowr[0] - 3);
     _delay_loop_1(align_text);
@@ -1155,11 +1103,7 @@ void update_data()
     if (updatedAnalog)
     {
         int curvar = totalmsg;
-        /*currentr[3] = (curvar % 10 + 3);
-        currentr[2] = (curvar % 100) / 10 + 3;
-        currentr[1] = (((curvar % 1000) / 100) + 3);
-        currentr[0] = (curvar / 1000 + 3);
-        */copy_to_buffer(curvar, currentr, 4, AS_DECIMAL);
+        copy_to_buffer(curvar, currentr, 4, AS_DECIMAL);
 
 
         copy_to_buffer(rssi, mahr, 4, AS_INTEGER);
@@ -1169,22 +1113,7 @@ void update_data()
     if (updatedVolt)
     {
         int voltvar = vario;
-        /*if (voltvar < 0)
-        {
-            text_buffer_bottom_mid[0] = 0;
-        }
-        else
-        {
-            text_buffer_bottom_mid[0] = 3;
-        }
-        voltvar = abs(voltvar);
-        text_buffer_bottom_mid[3] =  (voltvar % 10 + 3);
-        text_buffer_bottom_mid[2] = (voltvar % 100) / 10 + 3;
-        text_buffer_bottom_mid[1] = (((voltvar % 1000) / 100) + 3);*/
         copy_to_buffer(voltvar, text_buffer_bottom_mid, 4, AS_INTEGER);
-        //text_buffer_bottom_mid[0] = (voltvar / 1000 + 3);
-
-
         updatedVolt = 0;
     }
     if (updatedSats)
@@ -1209,12 +1138,7 @@ void update_data()
     if (updatedAlt)
     {
         copy_to_buffer(GPS_altitude, altituder, 6 , AS_INTEGER);
-        /*
-        altituder[4] =  (GPS_altitude % 10 + 3);
-        altituder[3] = (GPS_altitude % 100) / 10 + 3;
-        altituder[2] = (((GPS_altitude % 1000) / 100) + 3);
-        altituder[1] = (GPS_altitude / 1000 + 3);
-        updatedAlt = 0;*/
+        updatedAlt = 0;
     }
     if (updatedAtt)
     {
@@ -1313,10 +1237,7 @@ void send_serial_request()
 
 void detectline()
 {
-    //UCSR0B &= ~(1 << RXCIE0);
     little_delay // This is used to adjust to timing when using SimpleOSD instead of Arduino
-
-
 
     if (line == serial_line)
     {
@@ -1352,10 +1273,6 @@ void detectline()
 
         //print_summary();
     }
-    /*else if (line > gps_nmea_line && line < (gps_nmea_line + 9))
-    {
-        print_gps();
-    }*/
     else if (line == toplinenumbers)
     {
         render_top_numbers();
@@ -1371,12 +1288,8 @@ void detectline()
     //else if (line >= current_calc_line && line <= current_calc_line+20)
 
     line++;
-
-
     // Let's make sure SPI is not idling high.
     SPDR = 0b00000000;
-    // UCSR0B |= (1 << RXCIE0);
-
 }
 
 
