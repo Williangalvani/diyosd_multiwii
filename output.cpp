@@ -74,7 +74,7 @@ extern unsigned int speedkm;
 extern int32_t GPS_altitude;
 
 extern int updatedSpeed ;
-extern int updatedArrow;
+//extern int updatedArrow;
 extern int updatedAlt;
 extern int updatedDist;
 extern int updatedVolt;
@@ -1098,6 +1098,7 @@ extern uint16_t rssi;
 extern uint8_t GPS_fix;
 extern int16_t vario;
 uint16_t totalmsg = 0;
+extern int16_t relativedir;
 void update_data()
 {
     if (updatedAnalog)
@@ -1106,7 +1107,7 @@ void update_data()
         copy_to_buffer(curvar, currentr, 4, AS_DECIMAL);
 
 
-        copy_to_buffer(rssi, mahr, 4, AS_INTEGER);
+        copy_to_buffer(relativedir, mahr, 4, AS_INTEGER);
         updatedAnalog = 0;
 
     }

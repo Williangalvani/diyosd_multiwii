@@ -116,8 +116,8 @@ int32_t GPS_altitude = 0;
 uint16_t GPS_speed = 0;
 int16_t GPS_directionToHome = 0;
 uint8_t GPS_numSat = 0;
-
-
+int16_t heading = 0 ;
+int16_t relativedir = 0;
 
 long altitude_num2 = 0;
 /////////////////////////////////////////////////////
@@ -226,7 +226,19 @@ void serialMSPCheck()
     else if (cmdMSP == MSP_COMP_GPS)
     {
         los = GPS_distanceToHome = read16();
-        arrowd = (int(read16()) + 22) / 45;
+        int homedir = read16();
+        relativedir = homedir - heading - 20 ;
+        if (relativedir < 180)
+        {
+            relativedir +=360;
+        }else         
+        if (relativedir > 180)
+        {
+            relativedir -=360;
+        }
+
+
+        arrowd = (relativedir + 22) / 45;
         if (arrowd < 0)
         {
             arrowd += 8;
@@ -239,7 +251,7 @@ void serialMSPCheck()
         for (uint8_t i = 0; i < 2; i++)
             MwAngle[i] = (int)read16() / 10;
         MwHeading = read16();
-        read16();
+        heading = MwHeading;
         updatedAtt = 1;
     }
     else if (cmdMSP == MSP_ANALOG)
