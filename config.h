@@ -58,7 +58,7 @@
 // Smallest number allowed is 1
 // Please be aware - no limits have been made, so you can move the entire text as much as you want. If you push the text "over the edge" (when you can't see it anymore) this will cause the text 
 // to interrupt with the "new line sync". You can give it a try to see what it does - but I deffinately recommend to keep the text on the screen when flying :) 
-#define align_text_ 10
+#define align_text 10
 
 // Depending on your model (plane/heli/car) it can be necessary to edit these parameters to show flight-summary only when landed. To disable it, just put for example 0 in speed. The speed will never be less than 0.  
 

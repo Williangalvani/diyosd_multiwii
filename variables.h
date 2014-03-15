@@ -1,8 +1,6 @@
 
 #ifndef __variables_H
 #define __variables_H
-
-
 #include "config.h"
 #include <EEPROM.h>
 
@@ -22,13 +20,15 @@ int k=0;
 unsigned char ii=0;
 
 
-
+#include "Arduino.h"
+#include "Math.h"
+#include <avr/delay.h>
+#include <avr/pgmspace.h>
 
 //========================================
 // Data for mAh
 //========================================
 // Measuring amps and mah's;
-int loopcount=0;
 int current=0;
 
 unsigned char currentr[] = {3,3,3,3,3}; // Stores current characters (numbers) written to screen
@@ -46,7 +46,6 @@ unsigned char mahr[]={3,3,3,3,3,3}; // Stores mah characters (numbers) written t
  int ADCreal=0;  // Just a stupid name for the complete analog-read
  int ADCreal2=0; // Can be replaced with ADCreal
 
-int frame = 0;
 
 //========================================
 // Buffers
@@ -63,12 +62,9 @@ int buffer3[15];
 //========================================
 
 unsigned int mahkm_buf[5];
-
 unsigned char showcoordinates=1;
-
-int rssi_reading=0;
 unsigned char rssir[]={3,3,3};
-unsigned char rssi_negative =0;
+
 
 // Numbers and letters
 

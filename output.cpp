@@ -31,8 +31,16 @@
 #define output_small_letter(letter) SPDR = letters[((letter - 64) << 3) + (screen_line - 8)];
 #define to_index(ch) (ch - 64) << 3;
 
+#define delaybetweenchars 2
+#define delaybetweenwords 3
+
+#define small_arrow_left  ('a' - 64) << 3;
+
+
+//extern uint16_t frame_counter = 0;
+
+
 unsigned char satellitesr[3] = {3, 3, 3};
-extern unsigned char align_text;            // delay after hsync interrupt to print text on screen
 extern long los;           // home distance
 extern long altitude_num2;
 extern int arrowd;  // arrow direction
@@ -40,37 +48,19 @@ extern int arrowd;  // arrow direction
 
 extern int menuon;
 
-extern unsigned char menupos;
-extern unsigned char menu;
 extern unsigned char altitude_offset_on;
 
 extern char homepos;
 extern char GPSfix;
 extern uint8_t GPS_numSat;
-extern int homeposcount;
-
-/////////////////////////////// summary and menu //////////////
-extern unsigned char test;
-extern unsigned char loadbar[];
-extern unsigned char time[14];
-extern unsigned char landed;
-extern unsigned char max_altr[];
-extern unsigned char max_speedr[];
-extern unsigned char max_losr[];
-extern unsigned char total_distancer[];
-////////////////////////////////////////////////////////////////
 
 extern int current_num;
-extern unsigned char arrowr[];
 extern int altitude_negative;
 extern unsigned char avg_speedr[];
-extern unsigned char losr[];
-
-extern unsigned char altituder[10];
 
 extern unsigned char text_buffer_bottom_mid[];
 extern int success;
-extern unsigned int speedkm;
+extern unsigned int GPS_speed;
 extern int32_t GPS_altitude;
 
 extern int updatedSpeed ;
@@ -210,7 +200,6 @@ void print_large_4(int *buffer)
     SPDR = LargeNumbers[buffer[2] + 2 * screen_line + 1];
     delay8
 
-
     SPDR = LargeNumbers[buffer[3] + 2 * screen_line];
     delay15;
 
@@ -233,7 +222,6 @@ void print_large_5(int *buffer)
 
     SPDR = LargeNumbers[buffer[1] + 2 * screen_line + 1];
     delay8;
-
 
     SPDR = LargeNumbers[buffer[2] + 2 * screen_line];
     delay15;
@@ -508,6 +496,102 @@ void print_version()
 
 
 */
+
+
+void print_menu()
+{
+    int ij;
+    screen_line = line - (summaryline + 1);
+    _delay_loop_1(10);
+    //_delay_loop_1(65);
+
+    DimOn;
+    
+    if (screen_line == 0)
+    {
+        buffer[0] = to_index('M');
+        buffer[1] = to_index('E');
+        buffer[2] = to_index('N');
+        buffer[3] = to_index('U');
+        buffer[4] = to_index(' ');
+        buffer[5] = to_index(' ');
+        buffer[6] = to_index(' ');
+        buffer[7] = small_arrow_left;
+        buffer[8] = to_index('B');
+        buffer[9] = to_index('A');
+        buffer[10] = to_index('C');
+        buffer[11] = to_index('K');
+        buffer[12] = to_index(' ');
+        buffer[13] = to_index(' ');
+        buffer[14] = to_index('R');
+        buffer[15] = to_index('I');
+        buffer[16] = to_index('Z');
+        buffer[17] = to_index('O');
+        buffer[18] = to_index('N');
+        buffer[19] = to_index(' ');
+        buffer[20] = to_index('B');
+        buffer[21] = to_index('A');
+        buffer[22] = to_index('R');
+        buffer[23] = to_index('O');
+        buffer[24] = to_index(' ');
+        buffer[25] = to_index('M');
+        buffer[26] = to_index('A');
+        buffer[27] = to_index('G');
+        buffer[28] = to_index(' ');
+        buffer[29] = to_index('R');
+        buffer[30] = to_index('T');
+    }
+    else if (screen_line < 8 )
+    {
+        
+        for (ij = 0; ij <= 26; ij++)
+        {
+            SPDR = letters[buffer[ij] + (screen_line)];
+            _delay_loop_1(delaybetweenchars);
+        }
+        _delay_loop_1(delaybetweenwords);
+        
+    }
+    else if (screen_line > 10 && screen_line < 19 )
+    {
+        
+        uint8_t counter = screen_line - 10;
+        for (ij = 0; ij <= 26; ij++)
+        {
+            SPDR = letters[buffer[ij] + (counter)];
+            _delay_loop_1(delaybetweenchars);
+        }
+        _delay_loop_1(delaybetweenwords);
+        
+    }else if (screen_line > 20 && screen_line < 29 )
+    {
+        
+        uint8_t counter = screen_line - 20;
+        for (ij = 0; ij <= 26; ij++)
+        {
+            SPDR = letters[buffer[ij] + (counter)];
+            _delay_loop_1(delaybetweenchars);
+        }
+        _delay_loop_1(delaybetweenwords);
+        
+    }else if (screen_line > 29 && screen_line < 39 )
+    {
+        
+        uint8_t counter = screen_line - 30;
+        for (ij = 0; ij <= 26; ij++)
+        {
+            SPDR = letters[buffer[ij] + (counter)];
+            _delay_loop_1(delaybetweenchars);
+        }
+        _delay_loop_1(delaybetweenwords);
+        
+    }
+    DimOff;
+}
+
+
+/*
+
 void print_summary()
 {
 
@@ -687,6 +771,13 @@ void print_summary()
     }
 
 }
+*/
+
+
+unsigned char altituder[10] = {1, 1, 1, 1, 1, 1, 1, 1};
+unsigned char losr[] = {1, 1, 1, 1}; // Stores LOS characters (numbers) written to screen
+unsigned char arrowr[] = {3, 3, 3};
+
 
 
 void convert_to_big_numbers(unsigned char *chars, int *buffer_, char min_zeros, char digits)
@@ -867,8 +958,6 @@ extern uint8_t mode_osd_switch;
 
 
 
-#define delaybetweenchars 2
-#define delaybetweenwords 3
 
 
 void print_modes_sats()
@@ -1004,6 +1093,7 @@ void print_modes_sats()
 
 
 
+
 void render_bottom_numbers()
 {
 
@@ -1133,7 +1223,7 @@ void update_data()
     ///convert speed, one piece at a time
     if (updatedSpeed)
     {
-        copy_to_buffer(speedkm, speedr, 5, AS_DECIMAL);
+        copy_to_buffer(GPS_speed, speedr, 5, AS_DECIMAL);
         updatedSpeed = 0;
     }
     if (updatedAlt)
@@ -1269,8 +1359,15 @@ void detectline()
     }
     else if (line > summaryline && line < (summaryline + 90))
     {
+        if (menuon)
+        {
+            print_menu();
+        }
+        else
+        {
+            print_horizon();
 
-        print_horizon();
+        }
 
         //print_summary();
     }

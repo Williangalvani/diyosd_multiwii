@@ -11,7 +11,6 @@
 
 #include <math.h>
 
-
 //==================================
 // Decleration for GPS-variables
 //==================================
@@ -40,30 +39,17 @@ int arrowd;
 //========================================
 // Menu system
 //========================================
-
-unsigned char show_mah_km = EEPROM.read(1);
-unsigned char show_decimals = EEPROM.read(2);
-unsigned char altitude_offset_on = EEPROM.read(3);
-unsigned char align_text = EEPROM.read(4);
 //unsigned char show_plane_pos = EEPROM.read(5);
 
-int menuon = 0;
-unsigned char menupos = 0;
-char move_arrow_count = 0;
-unsigned char menu = 1;
+int menuon = 1;
 
-unsigned int speedkm = 0;
-
-unsigned char altituder[10] = {1, 1, 1, 1, 1, 1, 1, 1};
 
 long altitude_offset = 0;
-int altitude_negative = 0;
 
 unsigned char landed = 1;
 long altitude_num = 0;
-unsigned char loadbar[] = {29, 27, 27, 27, 27, 27, 27, 27, 27, 28};
-unsigned char losr[] = {1, 1, 1, 1}; // Stores LOS characters (numbers) written to screen
-unsigned char arrowr[] = {3, 3, 3};
+//unsigned char loadbar[] = {29, 27, 27, 27, 27, 27, 27, 27, 27, 28};
+
 int current_num = 0;
 ////variables changed, to updaate on the screen
 int updatedSpeed = 1;
@@ -75,6 +61,9 @@ int updatedVolt = 1;
 int updatedCur = 1;
 int updatedSats = 1;
 int updatedAnalog = 1;
+
+
+
 
 void update_gps_data()
 {
@@ -217,7 +206,7 @@ void serialMSPCheck()
         lats = GPS_latitude = read32();
         lons = GPS_longitude = read32();
         read16();
-        speedkm = GPS_speed = read16() / 10;
+        GPS_speed = read16() / 10;
         updatedSats = 1;
         //updatedAlt = 1;
         updatedSpeed = 1;

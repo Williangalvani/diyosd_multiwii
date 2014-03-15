@@ -37,6 +37,10 @@ extern int line;
 #define F_CPU 16000000
 #define baud 115200
 
+
+uint16_t frame_counter = 0;
+
+
 void setup()
 {
     // Set pin-modes:
@@ -58,35 +62,7 @@ void setup()
 
     // Init Serial communication.
     Serial.begin(BAUD);
-    /*UBRR0H = (unsigned char) (BAUD_SETTINGS>>8);
-    UBRR0L = (unsigned char) (BAUD_SETTINGS);
 
-    UCSR0B = (1<<RXEN0) | (1<<TXEN0);
-    */
-
-    //UCSR0C = (3<<UCSZ00);
-    //UCSR0A = 0b0000000;
-
-
-    /*
-      uint8_t h = ((F_CPU  / 4 / baud -1) / 2) >> 8;
-      uint8_t l = ((F_CPU  / 4 / baud -1) / 2);
-      UCSR0A  = (1<<U2X0); UBRR0H = h; UBRR0L = l; UCSR0B |= (1<<RXEN0)|(1<<TXEN0);
-      */
-    // Used to set the GPS update-rate to 5 hz, and GPGGA and GPRMC gps-strings (Only for MKT-GPS).
-
-    /*
-      Serial.print("$PMTK300,200,0,0,0,0*2F");
-      Serial.write(13);
-      Serial.write(10);
-
-      Serial.print("$PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28");
-      Serial.write(13);
-      Serial.write(10);
-    */
-
-    // Enable SPI for pixel generation
-    // Set SPI;
     SPCR =
         (1 << SPE) | //Enable SPI
         (1 << MSTR) | // Set as master
@@ -108,6 +84,10 @@ void setup()
     TIMSK0 = 0;
     TIMSK1 = 0;
     TIMSK2 = 0;
+
+
+
+
 
     // If Arduino is used
     if (CONTROLLER == 0)
@@ -143,45 +123,6 @@ void setup()
         // Button with internal pull-up.
         pinMode(6, INPUT);
         digitalWrite(6, HIGH);
-
-    }
-
-
-
-
-
-    // If the controller have not been configured yet.
-    if ((EEPROM.read(0) != 52) | (reset_values == 1))
-    {
-        EEPROM.write(0, 52);
-
-        // Show_mah_km
-        EEPROM.write(1, show_mah_km_);
-
-        // Show decimals
-        EEPROM.write(2, show_decimals_);
-
-        // Altitude offset
-        EEPROM.write(3, altitude_offset_on_);
-
-        // Align text
-        EEPROM.write(4, align_text_);
-
-        // Show plane pos
-        EEPROM.write(5, show_plane_pos_);
-
-        // Alt alarm
-        EEPROM.write(10, (unsigned char) alt_alarm_);
-        EEPROM.write(11, (unsigned char) (alt_alarm_ >> 8));
-
-        EEPROM.write(12, (unsigned char) los_alarm_);
-        EEPROM.write(13, (unsigned char) (los_alarm_ >> 8));
-
-        EEPROM.write(14, (unsigned char) volt_alarm_);
-        EEPROM.write(15, (unsigned char) (volt_alarm_ >> 8));
-
-        EEPROM.write(16, (unsigned char) mah_alarm_);
-        EEPROM.write(17, (unsigned char) (mah_alarm_ >> 8));
     }
 
 
@@ -211,12 +152,12 @@ ISR(ANALOG_COMP_vect)
     if (TCNT2 > 75)
     {
         line = 0;
+        frame_counter++;
 
     }
     //cbi(UCSR0B,RXCIE0);
     detectline();
     //sbi(UCSR0B,RXCIE0);
-
 }
 
 
