@@ -82,7 +82,7 @@ extern int updatedAnalog;
 extern int MwAngle[];
 int horizon_lenght = 1;
 char horizon_sprite = 1;
-char horizon_repeat = 0;
+int horizon_repeat = 0; 
 
 
 unsigned char horizonBuffer[90];
