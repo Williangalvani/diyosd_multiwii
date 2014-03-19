@@ -15,15 +15,12 @@
 
 // GPS should be configured to NMEA with GPGGA and GPRMC strings.
 
-#include "config.h"
+#include <avr/delay.h>
+
+#include <EEPROM.h>
+#include "config.h" 
 #include "output.h"
 #include "gps.h"
-
-
-#include <avr/delay.h>
-#include <avr/pgmspace.h>
-#include <EEPROM.h>
-
 
 #ifndef cbi
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))

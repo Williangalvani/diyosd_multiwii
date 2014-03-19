@@ -1,13 +1,9 @@
 
-#include "config.h"
 #include "ascii.h"
-#include "output.h"
 #include "variables.h"
-#include "Arduino.h"
-#include "Math.h"
-#include <avr/delay.h>
-#include <avr/pgmspace.h>
-#include <EEPROM.h>
+#include "output.h"
+
+
 
 
 
@@ -543,7 +539,7 @@ void print_menu()
     }
     else if (screen_line < 8 )
     {
-        
+        _delay_loop_1(18);
         for (ij = 0; ij <= 26; ij++)
         {
             SPDR = letters[buffer[ij] + (screen_line)];
@@ -554,7 +550,7 @@ void print_menu()
     }
     else if (screen_line > 10 && screen_line < 19 )
     {
-        
+        _delay_loop_1(14);
         uint8_t counter = screen_line - 10;
         for (ij = 0; ij <= 26; ij++)
         {
@@ -565,7 +561,7 @@ void print_menu()
         
     }else if (screen_line > 20 && screen_line < 29 )
     {
-        
+        _delay_loop_1(12);
         uint8_t counter = screen_line - 20;
         for (ij = 0; ij <= 26; ij++)
         {
@@ -576,8 +572,63 @@ void print_menu()
         
     }else if (screen_line > 29 && screen_line < 39 )
     {
-        
+        _delay_loop_1(10);
         uint8_t counter = screen_line - 30;
+        for (ij = 0; ij <= 26; ij++)
+        {
+            SPDR = letters[buffer[ij] + (counter)];
+            _delay_loop_1(delaybetweenchars);
+        }
+        _delay_loop_1(delaybetweenwords);
+        
+    }else if (screen_line > 39 && screen_line < 49 )
+    {
+        _delay_loop_1(8);
+        uint8_t counter = screen_line - 40;
+        for (ij = 0; ij <= 26; ij++)
+        {
+            SPDR = letters[buffer[ij] + (counter)];
+            _delay_loop_1(delaybetweenchars);
+        }
+        _delay_loop_1(delaybetweenwords);
+        
+    }else if (screen_line > 49 && screen_line < 59 )
+    {
+        _delay_loop_1(6);
+        uint8_t counter = screen_line - 50;
+        for (ij = 0; ij <= 26; ij++)
+        {
+            SPDR = letters[buffer[ij] + (counter)];
+            _delay_loop_1(delaybetweenchars);
+        }
+        _delay_loop_1(delaybetweenwords);
+        
+    }else if (screen_line > 59 && screen_line < 69 )
+    {
+        _delay_loop_1(4);
+        uint8_t counter = screen_line - 60; 
+        for (ij = 0; ij <= 26; ij++)
+        {
+            SPDR = letters[buffer[ij] + (counter)];
+            _delay_loop_1(delaybetweenchars);
+        }
+        _delay_loop_1(delaybetweenwords);
+        
+    }else if (screen_line > 69 && screen_line < 79 )
+    {
+        _delay_loop_1(2);
+        uint8_t counter = screen_line - 70;
+        for (ij = 0; ij <= 26; ij++)
+        {
+            SPDR = letters[buffer[ij] + (counter)];
+            _delay_loop_1(delaybetweenchars);
+        }
+        _delay_loop_1(delaybetweenwords);
+        
+    }else if (screen_line > 79 && screen_line < 89 )
+    {
+        
+        uint8_t counter = screen_line - 80;
         for (ij = 0; ij <= 26; ij++)
         {
             SPDR = letters[buffer[ij] + (counter)];

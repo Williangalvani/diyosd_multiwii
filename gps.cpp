@@ -1,15 +1,6 @@
-
-
 #include "gps.h"
-#include "config.h"
 
-#include "Arduino.h"
 
-#include <avr/delay.h>
-#include <avr/pgmspace.h>
-#include <EEPROM.h>
-
-#include <math.h>
 
 //==================================
 // Decleration for GPS-variables
@@ -19,6 +10,7 @@
 char homepos = 0;
 // Simple way to make a little delay before the homeposition is set. (It waits for GPS-fix, waits a couple of ekstra seconds and set homeposition)
 int homeposcount = 0;
+//int set_home_delay = 0;
 // GPSfix - when '0' no satellite fix.
 char GPSfix = '0';
 long lats = 0;
@@ -36,12 +28,16 @@ long los = 0;
 int arrowd;
 
 
+
+
+
+
 //========================================
 // Menu system
 //========================================
 //unsigned char show_plane_pos = EEPROM.read(5);
 
-int menuon = 1;
+int menuon = 0;
 
 
 long altitude_offset = 0;
