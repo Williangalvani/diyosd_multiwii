@@ -30,6 +30,13 @@
 #define output_small_byte(byte) SPDR = pgm_read_byte_near(&letters[byte + (screen_line)]);
 #define to_index(ch) (ch - 64) << 3;
 
+//#define output_big_number_left_part(buffer) SPDR = LargeNumbers[buffer + 2 * screen_line];
+//#define output_big_number_right_part(buffer) SPDR = LargeNumbers[buffer + 2 * screen_line + 1];
+
+#define output_big_number_left_part(buffer) SPDR = pgm_read_byte_near(&LargeNumbers[buffer + 2 * screen_line]);
+#define output_big_number_right_part(buffer) SPDR = pgm_read_byte_near(&LargeNumbers[buffer + 2 * screen_line + 1]);
+
+
 #define delaybetweenchars 2
 #define delaybetweenwords 3
 
@@ -91,10 +98,11 @@ void serialMSPCheck();
 
 void draw_arrow()
 {
-    SPDR = HomeArrow[buffer2[11] + 2 * screen_line];
+    SPDR = pgm_read_byte_near(&HomeArrow[buffer2[11] + 2 * screen_line]);
     DimOn;
     delay13
-    SPDR = HomeArrow[buffer2[11] + 2 * screen_line + 1];
+    
+    SPDR = pgm_read_byte_near(&HomeArrow[buffer2[11] + 2 * screen_line+1]);
     delay5;
     DimOff;
 
@@ -110,135 +118,146 @@ void write_speed()
 void print_altitude()
 {
 
-    _delay_loop_1(6);
-    SPDR = LargeNumbers[buffer3[9] + 2 * screen_line];
-    DimOn;
-    delay13
+    _delay_loop_1(2);
 
-    SPDR = LargeNumbers[buffer3[9] + 2 * screen_line + 1];
-    delay8
+    for (int i = 0; i < 6; i++)
+    {
+        output_big_number_left_part(buffer3[9 + i]);
+        delay11;
 
-
-    SPDR = LargeNumbers[buffer3[10] + 2 * screen_line];
-    delay15;
-
-    SPDR = LargeNumbers[buffer3[10] + 2 * screen_line + 1];
-    delay8
+        output_big_number_right_part(buffer3[9 + i]);
+        delay4
 
 
-    SPDR = LargeNumbers[buffer3[11] + 2 * screen_line];
-    delay15;
+    }
+    /* output_big_number_left_part(buffer3[9]);
+     DimOn;
+     delay9
 
-    SPDR = LargeNumbers[buffer3[11] + 2 * screen_line + 1];
-    delay8
-
-
-    SPDR = LargeNumbers[buffer3[12] + 2 * screen_line];
-    delay15;
-
-    SPDR = LargeNumbers[buffer3[12] + 2 * screen_line + 1];
-    delay8
+     output_big_number_right_part(buffer3[9]);
+     delay4
 
 
-    SPDR = LargeNumbers[buffer3[13] + 2 * screen_line];
-    delay15;
+     output_big_number_left_part(buffer3[10]);
+     delay11;
 
-    SPDR = LargeNumbers[buffer3[13] + 2 * screen_line + 1];
-    delay15;
+     output_big_number_right_part(buffer3[10]);
+     delay4
 
-    SPDR = LargeNumbers[buffer3[14] + 2 * screen_line];
-    delay15;
 
-    SPDR = LargeNumbers[buffer3[14] + 2 * screen_line + 1];
-    delay15;
-    DimOff;
+     output_big_number_left_part(buffer3[11]);
+     delay11;
+
+     output_big_number_right_part(buffer3[11]);
+     delay4
+
+
+     output_big_number_left_part(buffer3[12]);
+     delay11;
+
+     output_big_number_right_part(buffer3[12]);
+     delay4
+
+
+     output_big_number_left_part(buffer3[13]);
+     delay11;
+
+     output_big_number_right_part(buffer3[13]);
+     delay3;
+
+     output_big_number_left_part(buffer3[14]);
+     delay11;
+
+     output_big_number_right_part(buffer3[14]);
+     delay4;
+     DimOff;*/
 }
 
 void print_large_3(int *buffer)
 {
 
-    SPDR = LargeNumbers[buffer[0] + 2 * screen_line];
+    output_big_number_left_part(buffer[0]);
     DimOn;
-    delay13
-    SPDR = LargeNumbers[buffer[0] + 2 * screen_line + 1];
-    delay8
+    delay9
+    output_big_number_right_part(buffer[0]);
+    delay4
 
-    SPDR = LargeNumbers[buffer[1] + 2 * screen_line];
-    delay15;
+    output_big_number_left_part(buffer[1]);
+    delay11;
 
-    SPDR = LargeNumbers[buffer[1] + 2 * screen_line + 1];
-    delay8
+    output_big_number_right_part(buffer[1]);
+    delay4
 
-    SPDR = LargeNumbers[buffer[2] + 2 * screen_line];
-    delay15;
+    output_big_number_left_part(buffer[2]);
+    delay11;
 
-    SPDR = LargeNumbers[buffer[2] + 2 * screen_line + 1];
+    output_big_number_right_part(buffer[2]);
 }
 
 void print_large_4(int *buffer)
 {
 
-    SPDR = LargeNumbers[buffer[0] + 2 * screen_line];
+    output_big_number_left_part(buffer[0]);
     DimOn;
-    delay13
+    delay9
 
-    SPDR = LargeNumbers[buffer[0] + 2 * screen_line + 1];
-    delay8
-
-
-    SPDR = LargeNumbers[buffer[1] + 2 * screen_line];
-    delay15;
-
-    SPDR = LargeNumbers[buffer[1] + 2 * screen_line + 1];
-    delay8;
+    output_big_number_right_part(buffer[0]);
+    delay4
 
 
-    SPDR = LargeNumbers[buffer[2] + 2 * screen_line];
-    delay15;
+    output_big_number_left_part(buffer[1]);
+    delay11;
 
-    SPDR = LargeNumbers[buffer[2] + 2 * screen_line + 1];
-    delay8
+    output_big_number_right_part(buffer[1]);
+    delay4;
 
-    SPDR = LargeNumbers[buffer[3] + 2 * screen_line];
-    delay15;
 
-    SPDR = LargeNumbers[buffer[3] + 2 * screen_line + 1];
-    delay5;
+    output_big_number_left_part(buffer[2]);
+    delay11;
+
+    output_big_number_right_part(buffer[2]);
+    delay4
+
+    output_big_number_left_part(buffer[3]);
+    delay11;
+
+    output_big_number_right_part(buffer[3]);
+    delay1;
     DimOff;
 }
 
 void print_large_5(int *buffer)
 {
-    SPDR = LargeNumbers[buffer[0] + 2 * screen_line];
+
     DimOn;
-    delay13
+    delay9
 
-    SPDR = LargeNumbers[buffer[0] + 2 * screen_line + 1];
-    delay8
+    output_big_number_right_part(buffer[0]);
+    delay4
 
-    SPDR = LargeNumbers[buffer[1] + 2 * screen_line];
-    delay15;
+    output_big_number_left_part(buffer[1]);
+    delay11;
 
-    SPDR = LargeNumbers[buffer[1] + 2 * screen_line + 1];
-    delay8;
+    output_big_number_right_part(buffer[1]);
+    delay4;
 
-    SPDR = LargeNumbers[buffer[2] + 2 * screen_line];
-    delay15;
+    output_big_number_left_part(buffer[2]);
+    delay11;
 
-    SPDR = LargeNumbers[buffer[2] + 2 * screen_line + 1];
-    delay8
+    output_big_number_right_part(buffer[2]);
+    delay6
 
-    SPDR = LargeNumbers[buffer[3] + 2 * screen_line];
-    delay15;
+    output_big_number_left_part(buffer[3]);
+    delay12;
 
-    SPDR = LargeNumbers[buffer[3] + 2 * screen_line + 1];
-    delay8;
+    output_big_number_right_part(buffer[3]);
+    delay6;
 
-    SPDR = LargeNumbers[buffer[4] + 2 * screen_line];
-    delay15;
+    output_big_number_left_part(buffer[4]);
+    delay13;
 
-    SPDR = LargeNumbers[buffer[4] + 2 * screen_line + 1];
-    delay5;
+    output_big_number_right_part(buffer[4]);
+    delay3;
     DimOff;
 }
 
@@ -333,10 +352,10 @@ void print_bottom_large_numbers()
             delay5
             output_small_letter('C');
             DimOn;
-            delay12
+            delay11
 
             output_small_letter('U');
-            delay13
+            delay10
 
             output_small_letter('R');
             delay2
@@ -361,10 +380,10 @@ void print_bottom_large_numbers()
             delay5
             output_small_letter('V');
             DimOn;
-            delay12
+            delay10
 
             output_small_letter('A');
-            delay13
+            delay10
 
             output_small_letter('R');
             delay5
@@ -388,10 +407,10 @@ void print_bottom_large_numbers()
         {
             output_small_letter('R');
             DimOn;
-            delay13
+            delay11
 
             output_small_letter('S');
-            delay15;
+            delay13;
 
             output_small_letter('I');
             delay11
@@ -505,7 +524,7 @@ void print_menu()
     //_delay_loop_1(65);
 
     DimOn;
-    
+
     if (screen_line == 0)
     {
         buffer[0] = to_index('M');
@@ -545,11 +564,11 @@ void print_menu()
         _delay_loop_1(18);
         for (ij = 0; ij <= 26; ij++)
         {
-           output_small_byte(buffer[ij]);
+            output_small_byte(buffer[ij]);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
-        
+
     }
     else if (screen_line > 10 && screen_line < 19 )
     {
@@ -557,88 +576,95 @@ void print_menu()
         uint8_t counter = screen_line - 10;
         for (ij = 0; ij <= 26; ij++)
         {
-           output_small_byte(buffer[ij]);
+            output_small_byte(buffer[ij]);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
-        
-    }else if (screen_line > 20 && screen_line < 29 )
+
+    }
+    else if (screen_line > 20 && screen_line < 29 )
     {
         _delay_loop_1(12);
         uint8_t counter = screen_line - 20;
         for (ij = 0; ij <= 26; ij++)
         {
-           output_small_byte(buffer[ij]);
+            output_small_byte(buffer[ij]);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
-        
-    }else if (screen_line > 29 && screen_line < 39 )
+
+    }
+    else if (screen_line > 29 && screen_line < 39 )
     {
         _delay_loop_1(10);
         uint8_t counter = screen_line - 30;
         for (ij = 0; ij <= 26; ij++)
         {
-           output_small_byte(buffer[ij]);
+            output_small_byte(buffer[ij]);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
-        
-    }else if (screen_line > 39 && screen_line < 49 )
+
+    }
+    else if (screen_line > 39 && screen_line < 49 )
     {
         _delay_loop_1(8);
         uint8_t counter = screen_line - 40;
         for (ij = 0; ij <= 26; ij++)
         {
-           output_small_byte(buffer[ij]);
+            output_small_byte(buffer[ij]);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
-        
-    }else if (screen_line > 49 && screen_line < 59 )
+
+    }
+    else if (screen_line > 49 && screen_line < 59 )
     {
         _delay_loop_1(6);
         uint8_t counter = screen_line - 50;
         for (ij = 0; ij <= 26; ij++)
         {
-           output_small_byte(buffer[ij]);
+            output_small_byte(buffer[ij]);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
-        
-    }else if (screen_line > 59 && screen_line < 69 )
+
+    }
+    else if (screen_line > 59 && screen_line < 69 )
     {
         _delay_loop_1(4);
-        uint8_t counter = screen_line - 60; 
+        uint8_t counter = screen_line - 60;
         for (ij = 0; ij <= 26; ij++)
         {
-           output_small_byte(buffer[ij]);
+            output_small_byte(buffer[ij]);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
-        
-    }else if (screen_line > 69 && screen_line < 79 )
+
+    }
+    else if (screen_line > 69 && screen_line < 79 )
     {
         _delay_loop_1(2);
         uint8_t counter = screen_line - 70;
         for (ij = 0; ij <= 26; ij++)
         {
-           output_small_byte(buffer[ij]);
+            output_small_byte(buffer[ij]);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
-        
-    }else if (screen_line > 79 && screen_line < 89 )
+
+    }
+    else if (screen_line > 79 && screen_line < 89 )
     {
-        
+
         uint8_t counter = screen_line - 80;
         for (ij = 0; ij <= 26; ij++)
         {
-           output_small_byte(buffer[ij]);
+            output_small_byte(buffer[ij]);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
-        
+
     }
     DimOff;
 }
@@ -869,12 +895,12 @@ void render_top_numbers()
 void draw_horizon_point_at_line(int line)
 {
     unsigned int pixels = 0b10101010;
-    if (line == 1 || line == 89|| line == 45)
+    if (line == 1 || line == 89 || line == 45)
     {
         if (line == 45  && horizonBuffer[45] == 70)
         {
             pixels = 0b11111110;
-        } 
+        }
         SPDR = pixels;
         _delay_loop_1(align_text);
         int i;
@@ -960,7 +986,7 @@ void print_gps_sats()
         DimOn;
         for (unsigned char ij = 0; ij < 3; ij++)
         {
-           output_small_byte(buffer[ij]);
+            output_small_byte(buffer[ij]);
             _delay_loop_1(5);
         }
 
@@ -982,7 +1008,7 @@ void print_gps_sats()
         DimOn;
         for (unsigned char ij = 5; ij < 12; ij++)
         {
-           output_small_byte(buffer[ij]);
+            output_small_byte(buffer[ij]);
             _delay_loop_1(2);
         }
 
@@ -992,7 +1018,7 @@ void print_gps_sats()
 
         for (unsigned char ij = 12; ij < 15; ij++)
         {
-           output_small_byte(buffer[ij]);
+            output_small_byte(buffer[ij]);
             _delay_loop_1(4);
         }
         _delay_loop_1(3);
@@ -1070,7 +1096,7 @@ void print_modes_sats()
         {
             for (ij = 0; ij <= 4; ij++)
             {
-               output_small_byte(buffer[ij]);
+                output_small_byte(buffer[ij]);
                 _delay_loop_1(delaybetweenchars);
             }
             _delay_loop_1(delaybetweenwords);
@@ -1080,7 +1106,7 @@ void print_modes_sats()
         {
             for (ij = 6; ij <= 10; ij++)
             {
-               output_small_byte(buffer[ij]);
+                output_small_byte(buffer[ij]);
                 _delay_loop_1(delaybetweenchars);
             }
             _delay_loop_1(delaybetweenwords);
@@ -1090,7 +1116,7 @@ void print_modes_sats()
         {
             for (ij = 12; ij <= 18; ij++)
             {
-               output_small_byte(buffer[ij]);
+                output_small_byte(buffer[ij]);
                 _delay_loop_1(delaybetweenchars);
             }
             _delay_loop_1(delaybetweenwords);
@@ -1100,7 +1126,7 @@ void print_modes_sats()
         {
             for (ij = 20; ij <= 23; ij++)
             {
-               output_small_byte(buffer[ij]);
+                output_small_byte(buffer[ij]);
                 _delay_loop_1(delaybetweenchars);
                 delay3;
             }
@@ -1111,7 +1137,7 @@ void print_modes_sats()
         {
             for (ij = 25; ij <= 27; ij++)
             {
-               output_small_byte(buffer[ij]);
+                output_small_byte(buffer[ij]);
                 _delay_loop_1(delaybetweenchars);
                 delay5;
             }
@@ -1122,7 +1148,7 @@ void print_modes_sats()
         {
             for (ij = 29; ij <= 31; ij++)
             {
-               output_small_byte(buffer[ij]);
+                output_small_byte(buffer[ij]);
                 _delay_loop_1(delaybetweenchars);
                 delay5;
             }
@@ -1133,7 +1159,7 @@ void print_modes_sats()
         {
             for (ij = 33; ij <= 39; ij++)
             {
-               output_small_byte(buffer[ij]);
+                output_small_byte(buffer[ij]);
                 _delay_loop_1(delaybetweenchars);
             }
             _delay_loop_1(delaybetweenwords);

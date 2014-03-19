@@ -455,7 +455,7 @@ char numbers[] = {
 
 // Large numbers. I prefer the large numbers, but feel free to use the smaller ones.
 
-unsigned char LargeNumbers[] ={
+PROGMEM  const unsigned char LargeNumbers[] ={
 0b00000000,0b00000000,
 0b00000000,0b00000000,
 0b00000000,0b00000000,
@@ -745,7 +745,7 @@ unsigned char LargeNumbers[] ={
 0b00111000,0b00000000};
 
 
-unsigned char HomeArrow[] ={
+PROGMEM const unsigned char HomeArrow[] ={
 0b00000000,0b00000000,
 0b00000001,0b10000000,
 0b00000011,0b11000000,  
