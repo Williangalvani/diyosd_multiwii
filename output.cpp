@@ -860,25 +860,32 @@ void render_top_numbers()
 
     convert_to_big_numbers(losr, &buffer3[5], 3, 5);
 
-    convert_to_big_numbers(altituder, &buffer3[9], 1, 6);
+    convert_to_big_numbers(altituder, &buffer3[9], 3, 6);
 }
 
 void draw_horizon_point_at_line(int line)
 {
-    if (line == 1 || line == 89)
+    unsigned int pixels = 0b10101010;
+    if (line == 1 || line == 89|| line == 45)
     {
-        SPDR = 0b10101010;
+        if (line == 45  && horizonBuffer[45] == 70)
+        {
+            pixels = 0b11111110;
+        } 
+        SPDR = pixels;
         _delay_loop_1(align_text);
         int i;
-        for (i = 0; i < 80 + 1; i++)
+        for (i = 0; i < 70; i++)
         {
-            SPDR = 0b10101010;
+            SPDR = pixels;
             delay5;
         }
 
     }
+
     else if (line <= 5 || line >= 85)
     {
+
         _delay_loop_1(HORIZON_X_CENTER + 9);
         SPDR = 0b11111110;
     }
@@ -898,19 +905,11 @@ void draw_horizon_point_at_line(int line)
             SPDR = horizon_sprite;
             delay5;
         }
-        DimOn;
+        /*DimOn;
         delay5;
-        DimOff;
+        DimOff;*/
     }
 
-    if (line == 43)
-    {
-        DimOn;
-    }
-    else if (line == 47)
-    {
-        DimOff;
-    }
 }
 
 void print_gps_sats()
@@ -1279,7 +1278,7 @@ void update_data()
     }
     if (updatedAlt)
     {
-        copy_to_buffer(GPS_altitude, altituder, 6 , AS_INTEGER);
+        copy_to_buffer(GPS_altitude, altituder, 6 , AS_DECIMAL);
         updatedAlt = 0;
     }
     if (updatedAtt)
