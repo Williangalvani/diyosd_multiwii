@@ -2,6 +2,10 @@
 
 
 
+#define PIDITEMS 10
+#define RC_CHANS 8
+int16_t rcData[RC_CHANS];    // interval [1000;2000]
+
 //==================================
 // Decleration for GPS-variables
 //==================================
@@ -9,25 +13,20 @@
 // Has homeposition been set?
 char homepos = 0;
 // Simple way to make a little delay before the homeposition is set. (It waits for GPS-fix, waits a couple of ekstra seconds and set homeposition)
-int homeposcount = 0;
+char homeposcount = 0;
+//int32_t lats;
+//int32_t lons;
+int los;
 //int set_home_delay = 0;
 // GPSfix - when '0' no satellite fix.
 char GPSfix = '0';
-long lats = 0;
-long lons = 0;
 
-// Used to calculate line of sight.
-long losy = 0;
-long losx = 0;
-
-// Variables to store home position:
-long lathome = 0;
-long lonhome = 0;
-long los = 0;
 // Direction home:
 int arrowd;
 
-
+uint8_t confP[PIDITEMS];
+uint8_t confI[PIDITEMS];
+uint8_t confD[PIDITEMS];
 
 
 
@@ -48,15 +47,15 @@ long altitude_num = 0;
 
 int current_num = 0;
 ////variables changed, to updaate on the screen
-int updatedSpeed = 1;
-int updatedArrow = 1;
-int updatedAlt = 1;
-int updatedAtt = 1;
-int updatedDist = 1;
-int updatedVolt = 1;
-int updatedCur = 1;
-int updatedSats = 1;
-int updatedAnalog = 1;
+char updatedSpeed = 1;
+char updatedArrow = 1;
+char updatedAlt = 1;
+char updatedAtt = 1;
+char updatedDist = 1;
+char updatedVolt = 1;
+char updatedCur = 1;
+char updatedSats = 1;
+char updatedAnalog = 1;
 
 
 
@@ -73,8 +72,6 @@ void update_gps_data()
             homeposcount++;
             if (homeposcount > set_home_delay)
             {
-                lathome = lats;
-                lonhome = lons;
                 homepos = 1;
                 altitude_offset = altitude_num;
             }
@@ -89,14 +86,15 @@ void update_gps_data()
 #define MSP_ATTITUDE             108   //out message         2 angles 1 heading
 #define MSP_ANALOG               110
 #define MSP_ALTITUDE             109   //out message         altitude, variometer
+#define MSP_RC                   105
+#define MSP_PID                  112
+#define MSP_SET_PID              202
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int MwAngle[2] = {0, 0};        // Those will hold Accelerator Angle
 
 int16_t GPS_distanceToHome = 0;
 uint8_t GPS_fix = 0;
-int32_t GPS_latitude;
-int32_t GPS_longitude;
 int32_t GPS_altitude = 0;
 uint16_t GPS_speed = 0;
 int16_t GPS_directionToHome = 0;
@@ -135,7 +133,7 @@ uint16_t vbat = 0;
 uint16_t powermeter = 0;
 uint16_t rssi = 0;
 uint16_t mwcurrent = 0;
-int32_t  MwAltitude = 0;                       // This hold barometric value
+int16_t  MwAltitude = 0;                       // This hold barometric value
 int16_t vario = 0;
 static int16_t MwHeading = 0;
 
@@ -199,8 +197,10 @@ void serialMSPCheck()
             GPSfix = '0';
         }
         GPS_numSat = read8();
-        lats = GPS_latitude = read32();
-        lons = GPS_longitude = read32();
+        //lats = read32();
+        //lons = read32();
+        read32();
+        read32();
         read16();
         GPS_speed = read16() / 10;
         updatedSats = 1;
@@ -215,11 +215,11 @@ void serialMSPCheck()
         relativedir = homedir - heading - 20 ;
         if (relativedir < 180)
         {
-            relativedir +=360;
-        }else         
-        if (relativedir > 180)
+            relativedir += 360;
+        }
+        else if (relativedir > 180)
         {
-            relativedir -=360;
+            relativedir -= 360;
         }
 
 
@@ -271,6 +271,40 @@ void serialMSPCheck()
         mode_baro = mode & BAROMODE;
         mode_armed = mode & ARMEDMODE;
 
+    }
+    else if (cmdMSP == MSP_RC)
+    {
+        for (int i = 0; i < RC_CHANS; i++)
+        {
+            rcData[i] = read16();
+        }
+
+    }
+             /*  byteP[i] = read8(); byteI[i] = read8(); byteD[i] = read8();
+            switch (i)
+            {
+            case 0: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
+            case 1: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
+            case 2: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
+            case 3: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
+            case 7: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
+            case 8: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
+            case 9: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
+            //Different rates fot POS-4 POSR-5 NAVR-6
+            case 4: confP[i] = (byteP[i] / 100.0); confI[i] = (byteI[i] / 100.0); confD[i] = (byteD[i] / 1000.0); break;
+            case 5: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 100.0); confD[i] = (byteD[i] / 1000.0); break;
+            case 6: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 100.0); confD[i] = (byteD[i] / 1000.0); break;
+            }*/
+    else if (cmdMSP == MSP_PID)
+    {
+
+        for (char i = 0; i < PIDITEMS; i++)
+        {
+            confP[i] = read8();
+            confI[i] = read8();
+            confD[i] = read8();
+
+        }
     }
 }
 

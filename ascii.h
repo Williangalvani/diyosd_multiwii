@@ -1,7 +1,8 @@
 #ifndef ascii_h
 #define ascii_h
+#include <avr/pgmspace.h>
 
-unsigned char letters[] = {
+PROGMEM  const unsigned char letters[] = {
 // Blank - 0  
 0b00000000, 
 0b00000000,

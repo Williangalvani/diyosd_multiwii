@@ -24,7 +24,10 @@
 #define FOUR_CHARS 4
 #define FIVE_CHARS 5
 
-#define output_small_letter(letter) SPDR = letters[((letter - 64) << 3) + (screen_line - 8)];
+//#define output_small_letter(letter) SPDR = letters[((letter - 64) << 3) + (screen_line - 8)];
+//#define output_small_byte(byte) SPDR = letters[byte + (screen_line)];
+#define output_small_letter(letter) SPDR = pgm_read_byte_near(&letters[((letter - 64) << 3) + (screen_line - 8)]);
+#define output_small_byte(byte) SPDR = pgm_read_byte_near(&letters[byte + (screen_line)]);
 #define to_index(ch) (ch - 64) << 3;
 
 #define delaybetweenchars 2
@@ -72,7 +75,7 @@ extern int updatedAnalog;
 extern int MwAngle[];
 int horizon_lenght = 1;
 char horizon_sprite = 1;
-int horizon_repeat = 0;
+char horizon_repeat = 0;
 
 
 unsigned char horizonBuffer[90];
@@ -243,21 +246,21 @@ void print_large_5(int *buffer)
 void print_small_5(unsigned char *buffer)
 {
     // Updates SPDR (SPI buffer)
-    SPDR = letters[(buffer[0]) + (screen_line)];
+    output_small_byte(buffer[0]);
     DimOn;
     // Adds delay before the SPI buffer can be updated again.
     delay12
 
-    SPDR = letters[(buffer[1]) + (screen_line)];
+    output_small_byte(buffer[1]);
     delay12
 
-    SPDR = letters[(buffer[2]) + (screen_line)];
+    output_small_byte(buffer[2]);
     delay13
 
-    SPDR = letters[(buffer[3]) + (screen_line)];
+    output_small_byte(buffer[3]);
     delay13
 
-    SPDR = letters[(buffer[4]) + (screen_line)];
+    output_small_byte(buffer[4]);
     delay13
     DimOff;
 }
@@ -265,14 +268,14 @@ void print_small_5(unsigned char *buffer)
 void print_small_3(unsigned char *buffer)
 {
 
-    SPDR = letters[(buffer[0]) + (screen_line)];
+    output_small_byte(buffer[0]);
     DimOn;
     delay12
 
-    SPDR = letters[(buffer[1]) + (screen_line)];
+    output_small_byte(buffer[1]);
     delay13
 
-    SPDR = letters[(buffer[2]) + (screen_line)];
+    output_small_byte(buffer[2]);
     delay13
     DimOff;
 
@@ -473,7 +476,7 @@ void print_version()
     DimOn;
     for (unsigned char ij = 0; ij < 7; ij++)
     {
-        SPDR = letters[buffer[ij] + (screen_line)];
+       output_small_byte(buffer[ij] + (screen_line)];
         _delay_loop_1(2);
     }
     _delay_loop_1(6);
@@ -542,7 +545,7 @@ void print_menu()
         _delay_loop_1(18);
         for (ij = 0; ij <= 26; ij++)
         {
-            SPDR = letters[buffer[ij] + (screen_line)];
+           output_small_byte(buffer[ij]);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
@@ -554,7 +557,7 @@ void print_menu()
         uint8_t counter = screen_line - 10;
         for (ij = 0; ij <= 26; ij++)
         {
-            SPDR = letters[buffer[ij] + (counter)];
+           output_small_byte(buffer[ij]);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
@@ -565,7 +568,7 @@ void print_menu()
         uint8_t counter = screen_line - 20;
         for (ij = 0; ij <= 26; ij++)
         {
-            SPDR = letters[buffer[ij] + (counter)];
+           output_small_byte(buffer[ij]);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
@@ -576,7 +579,7 @@ void print_menu()
         uint8_t counter = screen_line - 30;
         for (ij = 0; ij <= 26; ij++)
         {
-            SPDR = letters[buffer[ij] + (counter)];
+           output_small_byte(buffer[ij]);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
@@ -587,7 +590,7 @@ void print_menu()
         uint8_t counter = screen_line - 40;
         for (ij = 0; ij <= 26; ij++)
         {
-            SPDR = letters[buffer[ij] + (counter)];
+           output_small_byte(buffer[ij]);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
@@ -598,7 +601,7 @@ void print_menu()
         uint8_t counter = screen_line - 50;
         for (ij = 0; ij <= 26; ij++)
         {
-            SPDR = letters[buffer[ij] + (counter)];
+           output_small_byte(buffer[ij]);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
@@ -609,7 +612,7 @@ void print_menu()
         uint8_t counter = screen_line - 60; 
         for (ij = 0; ij <= 26; ij++)
         {
-            SPDR = letters[buffer[ij] + (counter)];
+           output_small_byte(buffer[ij]);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
@@ -620,7 +623,7 @@ void print_menu()
         uint8_t counter = screen_line - 70;
         for (ij = 0; ij <= 26; ij++)
         {
-            SPDR = letters[buffer[ij] + (counter)];
+           output_small_byte(buffer[ij]);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
@@ -631,7 +634,7 @@ void print_menu()
         uint8_t counter = screen_line - 80;
         for (ij = 0; ij <= 26; ij++)
         {
-            SPDR = letters[buffer[ij] + (counter)];
+           output_small_byte(buffer[ij]);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
@@ -674,7 +677,7 @@ void print_summary()
             DimOn;
             for (unsigned char ij = 0; ij < 3; ij++)
             {
-                SPDR = letters[buffer[ij] + (screen_line)];
+               output_small_byte(buffer[ij] + (screen_line)];
                 _delay_loop_1(5);
             }
 
@@ -709,7 +712,7 @@ void print_summary()
             DimOn;
             for (unsigned char ij = 0; ij < 7; ij++)
             {
-                SPDR = letters[buffer[ij] + (screen_line)];
+               output_small_byte(buffer[ij] + (screen_line)];
                 _delay_loop_1(2);
             }
 
@@ -734,7 +737,7 @@ void print_summary()
 
             for (unsigned char ij = 0; ij < 3; ij++)
             {
-                SPDR = letters[buffer[ij] + (screen_line)];
+               output_small_byte(buffer[ij] + (screen_line)];
                 _delay_loop_1(4);
             }
             _delay_loop_1(3);
@@ -784,7 +787,7 @@ void print_summary()
             DimOn;
             for (unsigned char ij = 10; ij < 15; ij++)
             {
-                SPDR = letters[buffer[ij] + (screen_line)];
+               output_small_byte(buffer[ij] + (screen_line)];
                 _delay_loop_1(2);
 
             }
@@ -810,7 +813,7 @@ void print_summary()
 
             for (unsigned char ij = 0; ij < 10; ij++)
             {
-                SPDR = letters[buffer[ij] + (screen_line)];
+               output_small_byte(buffer[ij] + (screen_line)];
                 DimOn;
                 _delay_loop_1(3);
             }
@@ -957,7 +960,7 @@ void print_gps_sats()
         DimOn;
         for (unsigned char ij = 0; ij < 3; ij++)
         {
-            SPDR = letters[buffer[ij] + (screen_line)];
+           output_small_byte(buffer[ij]);
             _delay_loop_1(5);
         }
 
@@ -979,7 +982,7 @@ void print_gps_sats()
         DimOn;
         for (unsigned char ij = 5; ij < 12; ij++)
         {
-            SPDR = letters[buffer[ij] + (screen_line)];
+           output_small_byte(buffer[ij]);
             _delay_loop_1(2);
         }
 
@@ -989,7 +992,7 @@ void print_gps_sats()
 
         for (unsigned char ij = 12; ij < 15; ij++)
         {
-            SPDR = letters[buffer[ij] + (screen_line)];
+           output_small_byte(buffer[ij]);
             _delay_loop_1(4);
         }
         _delay_loop_1(3);
@@ -1067,7 +1070,7 @@ void print_modes_sats()
         {
             for (ij = 0; ij <= 4; ij++)
             {
-                SPDR = letters[buffer[ij] + (screen_line)];
+               output_small_byte(buffer[ij]);
                 _delay_loop_1(delaybetweenchars);
             }
             _delay_loop_1(delaybetweenwords);
@@ -1077,7 +1080,7 @@ void print_modes_sats()
         {
             for (ij = 6; ij <= 10; ij++)
             {
-                SPDR = letters[buffer[ij] + (screen_line)];
+               output_small_byte(buffer[ij]);
                 _delay_loop_1(delaybetweenchars);
             }
             _delay_loop_1(delaybetweenwords);
@@ -1087,7 +1090,7 @@ void print_modes_sats()
         {
             for (ij = 12; ij <= 18; ij++)
             {
-                SPDR = letters[buffer[ij] + (screen_line)];
+               output_small_byte(buffer[ij]);
                 _delay_loop_1(delaybetweenchars);
             }
             _delay_loop_1(delaybetweenwords);
@@ -1097,7 +1100,7 @@ void print_modes_sats()
         {
             for (ij = 20; ij <= 23; ij++)
             {
-                SPDR = letters[buffer[ij] + (screen_line)];
+               output_small_byte(buffer[ij]);
                 _delay_loop_1(delaybetweenchars);
                 delay3;
             }
@@ -1108,7 +1111,7 @@ void print_modes_sats()
         {
             for (ij = 25; ij <= 27; ij++)
             {
-                SPDR = letters[buffer[ij] + (screen_line)];
+               output_small_byte(buffer[ij]);
                 _delay_loop_1(delaybetweenchars);
                 delay5;
             }
@@ -1119,7 +1122,7 @@ void print_modes_sats()
         {
             for (ij = 29; ij <= 31; ij++)
             {
-                SPDR = letters[buffer[ij] + (screen_line)];
+               output_small_byte(buffer[ij]);
                 _delay_loop_1(delaybetweenchars);
                 delay5;
             }
@@ -1130,7 +1133,7 @@ void print_modes_sats()
         {
             for (ij = 33; ij <= 39; ij++)
             {
-                SPDR = letters[buffer[ij] + (screen_line)];
+               output_small_byte(buffer[ij]);
                 _delay_loop_1(delaybetweenchars);
             }
             _delay_loop_1(delaybetweenwords);
