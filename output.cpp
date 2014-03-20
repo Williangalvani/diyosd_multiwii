@@ -2,7 +2,7 @@
 #include "ascii.h"
 #include "variables.h"
 #include "output.h"
-
+#include "config.h"
 
 
 
@@ -44,44 +44,75 @@
 
 #define small_arrow_left  ('a' - 64) << 3;
 
+#define wait_before_next_char() delay2;
 
 //extern uint16_t frame_counter = 0;
 
 
+unsigned char toptext[12] = {'S'-64,'P'-64,'E'-64,'E'-64,'D'-64,'L'-64,'O'-64,'S'-64,'A'-64,'L'-64,'T'-64,20};
+
+// Linenumber
+int line = 0;
+int screen_line =0;
+
+// Standard integers to use with for/while loops etc.
+int a=0;
+int i=0;
+int k=0;
+
+unsigned char ii=0;
+
+
+#include "Arduino.h"
+#include "Math.h"
+#include <avr/delay.h>
+#include <avr/pgmspace.h>
+
+//========================================
+// Data for mAh
+//========================================
+// Measuring amps and mah's;
+int current=0;
+
+unsigned char currentr[] = {3,3,3,3,3}; // Stores current characters (numbers) written to screen
+unsigned char text_buffer_bottom_mid[] = {3,3,3,3,3}; // Stores current characters (numbers) written to screen
+int bat_volt =0;
+
+long mah = 0;
+long mahtemp=0;
+unsigned char mahr[]={3,3,3,3,3,3}; // Stores mah characters (numbers) written to screen
+
+
+//ADC (It's a 10 bit ADC, so we need to read from 2 registers and put them together. This is what ADSCtemp is used for
+ int ADCtemp=0;
+ int ADCtemp2=0;
+ int ADCreal=0;  // Just a stupid name for the complete analog-read
+ int ADCreal2=0; // Can be replaced with ADCreal
+
+
+//========================================
+// Buffers
+//========================================
+unsigned char buffer[50];
+unsigned char menuBuffer[91];
+// Need an integer when reading large characeters (will exceed 256)
+int buffer2[12]={12,12,12,12,12,12,12,12,12,12,12,12};
+int buffer3[15];
+    
+
+//========================================
+// Mixed
+//========================================
+
+unsigned int mahkm_buf[5];
+unsigned char showcoordinates=1;
+unsigned char rssir[]={3,3,3};
+
+
+
+
 unsigned char satellitesr[3] = {3, 3, 3};
-extern long los;           // home distance
-extern long altitude_num2;
-extern int arrowd;  // arrow direction
 
-
-extern int menuon;
-
-extern unsigned char altitude_offset_on;
-
-extern char homepos;
-extern char GPSfix;
-extern uint8_t GPS_numSat;
-
-extern int current_num;
-extern int altitude_negative;
-extern unsigned char avg_speedr[];
-
-extern unsigned char text_buffer_bottom_mid[];
-extern int success;
-extern unsigned int GPS_speed;
-extern int32_t GPS_altitude;
-
-extern int updatedSpeed ;
-//extern int updatedArrow;
-extern int updatedAlt;
-extern int updatedDist;
-extern int updatedVolt;
-extern int updatedCur;
-extern int updatedSats  ;
-extern int updatedAtt  ;
-extern int updatedAnalog;
-
-extern int MwAngle[];
 int horizon_lenght = 1;
 char horizon_sprite = 1;
 int horizon_repeat = 0; 
@@ -90,7 +121,7 @@ int horizon_repeat = 0;
 unsigned char horizonBuffer[90];
 unsigned char speedr[] = {1, 1, 1, 1};
 
-extern unsigned char avg_speedr[];
+
 int current_letter = 0;
 unsigned char charcounter;
 
@@ -544,7 +575,7 @@ void print_menu()
         for (ij = 0; ij <= 9; ij++)
         {
             output_small_byte(menuBuffer[ij]);
-            _delay_loop_1(delaybetweenchars);
+            wait_before_next_char();
         }
         _delay_loop_1(delaybetweenwords);
 
@@ -556,7 +587,7 @@ void print_menu()
         for (ij = 10; ij <= 19; ij++)
         {
             output_small_byte_line(menuBuffer[ij],counter);
-            _delay_loop_1(delaybetweenchars);
+            wait_before_next_char();
         }
         _delay_loop_1(delaybetweenwords);
 
@@ -568,7 +599,7 @@ void print_menu()
         for (ij = 20; ij <= 29; ij++)
         {
             output_small_byte_line(menuBuffer[ij],counter);
-            _delay_loop_1(delaybetweenchars);
+            wait_before_next_char();
         }
         _delay_loop_1(delaybetweenwords);
 
@@ -580,7 +611,7 @@ void print_menu()
         for (ij = 30; ij <= 39; ij++)
         {
             output_small_byte_line(menuBuffer[ij],counter);
-            _delay_loop_1(delaybetweenchars);
+            wait_before_next_char();
         }
         _delay_loop_1(delaybetweenwords);
 
@@ -592,7 +623,7 @@ void print_menu()
         for (ij = 40; ij <= 49; ij++)
         {
             output_small_byte_line(menuBuffer[ij],counter);
-            _delay_loop_1(delaybetweenchars);
+            wait_before_next_char();
         }
         _delay_loop_1(delaybetweenwords);
 
@@ -604,7 +635,7 @@ void print_menu()
         for (ij = 50; ij <= 59; ij++)
         {
             output_small_byte_line(menuBuffer[ij],counter);
-            _delay_loop_1(delaybetweenchars);
+            wait_before_next_char();
         }
         _delay_loop_1(delaybetweenwords);
 
@@ -616,7 +647,7 @@ void print_menu()
         for (ij = 60; ij <= 69; ij++)
         {
             output_small_byte_line(menuBuffer[ij],counter);
-            _delay_loop_1(delaybetweenchars);
+            wait_before_next_char();
         }
         _delay_loop_1(delaybetweenwords);
 
@@ -628,7 +659,7 @@ void print_menu()
         for (ij = 70; ij <= 79; ij++)
         {
             output_small_byte_line(menuBuffer[ij],counter);
-            _delay_loop_1(delaybetweenchars);
+            wait_before_next_char();
         }
         _delay_loop_1(delaybetweenwords);
 
@@ -640,7 +671,7 @@ void print_menu()
         for (ij = 80; ij <= 89; ij++)
         {
             output_small_byte_line(menuBuffer[ij],counter);
-            _delay_loop_1(delaybetweenchars);
+            wait_before_next_char();
         }
         _delay_loop_1(delaybetweenwords);
 
@@ -1005,14 +1036,6 @@ void print_gps_sats()
     }
 }
 
-extern uint8_t mode_armed;
-extern uint8_t mode_stable;
-extern uint8_t mode_horizon;
-extern uint8_t mode_baro;
-extern uint8_t mode_mag;
-extern uint8_t mode_gpshome;
-extern uint8_t mode_gpshold;
-extern uint8_t mode_osd_switch;
 
 
 
@@ -1076,7 +1099,7 @@ void print_modes_sats()
             for (ij = 0; ij <= 4; ij++)
             {
                 output_small_byte(buffer[ij]);
-                _delay_loop_1(delaybetweenchars);
+                wait_before_next_char();
             }
             _delay_loop_1(delaybetweenwords);
 
@@ -1086,7 +1109,7 @@ void print_modes_sats()
             for (ij = 6; ij <= 10; ij++)
             {
                 output_small_byte(buffer[ij]);
-                _delay_loop_1(delaybetweenchars);
+                wait_before_next_char();
             }
             _delay_loop_1(delaybetweenwords);
 
@@ -1096,7 +1119,7 @@ void print_modes_sats()
             for (ij = 12; ij <= 18; ij++)
             {
                 output_small_byte(buffer[ij]);
-                _delay_loop_1(delaybetweenchars);
+                wait_before_next_char();
             }
             _delay_loop_1(delaybetweenwords);
 
@@ -1106,7 +1129,7 @@ void print_modes_sats()
             for (ij = 20; ij <= 23; ij++)
             {
                 output_small_byte(buffer[ij]);
-                _delay_loop_1(delaybetweenchars);
+                wait_before_next_char();
                 delay3;
             }
             _delay_loop_1(delaybetweenwords);
@@ -1117,7 +1140,7 @@ void print_modes_sats()
             for (ij = 25; ij <= 27; ij++)
             {
                 output_small_byte(buffer[ij]);
-                _delay_loop_1(delaybetweenchars);
+                wait_before_next_char();
                 delay5;
             }
             _delay_loop_1(delaybetweenwords);
@@ -1128,7 +1151,7 @@ void print_modes_sats()
             for (ij = 29; ij <= 31; ij++)
             {
                 output_small_byte(buffer[ij]);
-                _delay_loop_1(delaybetweenchars);
+                wait_before_next_char();
                 delay5;
             }
             _delay_loop_1(delaybetweenwords);
@@ -1139,7 +1162,7 @@ void print_modes_sats()
             for (ij = 33; ij <= 39; ij++)
             {
                 output_small_byte(buffer[ij]);
-                _delay_loop_1(delaybetweenchars);
+                wait_before_next_char();
             }
             _delay_loop_1(delaybetweenwords);
 
@@ -1241,14 +1264,8 @@ void print_horizon()
 }
 int update_counter = 0;
 
-extern uint16_t mwcurrent;
-extern uint16_t rssi;
-extern uint8_t GPS_fix;
-extern int16_t vario;
-uint16_t totalmsg = 0;
-extern int16_t relativedir;
-extern int16_t rcData[12];
 
+uint16_t totalmsg = 0;
 void update_data()
 {
     if (updatedAnalog)

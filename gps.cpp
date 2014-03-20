@@ -1,6 +1,6 @@
 #include "gps.h"
 #include "output.h"
-
+#include "variables.h"
 
 #define PIDITEMS 10
 #define RC_CHANS 12
@@ -16,7 +16,7 @@ char homepos = 0;
 char homeposcount = 0;
 //int32_t lats;
 //int32_t lons;
-int los;
+long int los;
 //int set_home_delay = 0;
 // GPSfix - when '0' no satellite fix.
 char GPSfix = '0';
@@ -28,15 +28,12 @@ uint8_t confP[PIDITEMS];
 uint8_t confI[PIDITEMS];
 uint8_t confD[PIDITEMS];
 
-
-
-
 //========================================
 // Menu system
 //========================================
 //unsigned char show_plane_pos = EEPROM.read(5);
 
-int menuon = 1;
+int menuon = 0;
 
 
 long altitude_offset = 0;
@@ -149,7 +146,7 @@ static uint8_t rcvChecksum;
 static uint8_t readIndex;
 
 int should_process_now = 0;
-extern unsigned char text_buffer_bottom_mid[];
+
 int counter = 0;
 
 

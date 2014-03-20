@@ -40,8 +40,8 @@ void update_data();
 #define output_big_number_right_part(buffer) SPDR = pgm_read_byte_near(&LargeNumbers[buffer + 2 * screen_line + 1]);
 
 
-#define delaybetweenchars 2
-#define delaybetweenwords 3
+#define delaybetweenchars 1
+#define delaybetweenwords 2
 
 #define small_arrow_left  ('a' - 64) << 3;
 
