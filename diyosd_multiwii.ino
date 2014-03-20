@@ -21,6 +21,7 @@
 #include "config.h" 
 #include "output.h"
 #include "gps.h"
+#include "menu.h"
 
 #ifndef cbi
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
@@ -37,9 +38,11 @@ extern int line;
 
 uint16_t frame_counter = 0;
 
+extern int16_t* rcData;
 
 void setup()
 {
+    rcData[0] = 1500;
     // Set pin-modes:
     pinMode(10, OUTPUT);
     pinMode(11, OUTPUT);

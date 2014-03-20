@@ -28,6 +28,8 @@
 //#define output_small_byte(byte) SPDR = letters[byte + (screen_line)];
 #define output_small_letter(letter) SPDR = pgm_read_byte_near(&letters[((letter - 64) << 3) + (screen_line - 8)]);
 #define output_small_byte(byte) SPDR = pgm_read_byte_near(&letters[byte + (screen_line)]);
+#define output_small_byte_line(byte, aline) SPDR = pgm_read_byte_near(&letters[byte + (aline)]);
+
 #define to_index(ch) (ch - 64) << 3;
 
 //#define output_big_number_left_part(buffer) SPDR = LargeNumbers[buffer + 2 * screen_line];
@@ -515,6 +517,13 @@ void print_version()
 
 */
 
+void clear_menu()
+{
+        for(int i =0;i<91;i++)
+        {
+            menuBuffer[i] = to_index(' ') ;
+        }
+}
 
 void print_menu()
 {
@@ -527,44 +536,14 @@ void print_menu()
 
     if (screen_line == 0)
     {
-        buffer[0] = to_index('M');
-        buffer[1] = to_index('E');
-        buffer[2] = to_index('N');
-        buffer[3] = to_index('U');
-        buffer[4] = to_index(' ');
-        buffer[5] = to_index(' ');
-        buffer[6] = to_index(' ');
-        buffer[7] = small_arrow_left;
-        buffer[8] = to_index('B');
-        buffer[9] = to_index('A');
-        buffer[10] = to_index('C');
-        buffer[11] = to_index('K');
-        buffer[12] = to_index(' ');
-        buffer[13] = to_index(' ');
-        buffer[14] = to_index('R');
-        buffer[15] = to_index('I');
-        buffer[16] = to_index('Z');
-        buffer[17] = to_index('O');
-        buffer[18] = to_index('N');
-        buffer[19] = to_index(' ');
-        buffer[20] = to_index('B');
-        buffer[21] = to_index('A');
-        buffer[22] = to_index('R');
-        buffer[23] = to_index('O');
-        buffer[24] = to_index(' ');
-        buffer[25] = to_index('M');
-        buffer[26] = to_index('A');
-        buffer[27] = to_index('G');
-        buffer[28] = to_index(' ');
-        buffer[29] = to_index('R');
-        buffer[30] = to_index('T');
+        clear_menu();
     }
     else if (screen_line < 8 )
     {
         _delay_loop_1(18);
-        for (ij = 0; ij <= 26; ij++)
+        for (ij = 0; ij <= 9; ij++)
         {
-            output_small_byte(buffer[ij]);
+            output_small_byte(menuBuffer[ij]);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
@@ -574,9 +553,9 @@ void print_menu()
     {
         _delay_loop_1(14);
         uint8_t counter = screen_line - 10;
-        for (ij = 0; ij <= 26; ij++)
+        for (ij = 10; ij <= 19; ij++)
         {
-            output_small_byte(buffer[ij]);
+            output_small_byte_line(menuBuffer[ij],counter);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
@@ -586,9 +565,9 @@ void print_menu()
     {
         _delay_loop_1(12);
         uint8_t counter = screen_line - 20;
-        for (ij = 0; ij <= 26; ij++)
+        for (ij = 20; ij <= 29; ij++)
         {
-            output_small_byte(buffer[ij]);
+            output_small_byte_line(menuBuffer[ij],counter);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
@@ -598,9 +577,9 @@ void print_menu()
     {
         _delay_loop_1(10);
         uint8_t counter = screen_line - 30;
-        for (ij = 0; ij <= 26; ij++)
+        for (ij = 30; ij <= 39; ij++)
         {
-            output_small_byte(buffer[ij]);
+            output_small_byte_line(menuBuffer[ij],counter);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
@@ -610,9 +589,9 @@ void print_menu()
     {
         _delay_loop_1(8);
         uint8_t counter = screen_line - 40;
-        for (ij = 0; ij <= 26; ij++)
+        for (ij = 40; ij <= 49; ij++)
         {
-            output_small_byte(buffer[ij]);
+            output_small_byte_line(menuBuffer[ij],counter);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
@@ -622,9 +601,9 @@ void print_menu()
     {
         _delay_loop_1(6);
         uint8_t counter = screen_line - 50;
-        for (ij = 0; ij <= 26; ij++)
+        for (ij = 50; ij <= 59; ij++)
         {
-            output_small_byte(buffer[ij]);
+            output_small_byte_line(menuBuffer[ij],counter);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
@@ -634,9 +613,9 @@ void print_menu()
     {
         _delay_loop_1(4);
         uint8_t counter = screen_line - 60;
-        for (ij = 0; ij <= 26; ij++)
+        for (ij = 60; ij <= 69; ij++)
         {
-            output_small_byte(buffer[ij]);
+            output_small_byte_line(menuBuffer[ij],counter);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
@@ -646,9 +625,9 @@ void print_menu()
     {
         _delay_loop_1(2);
         uint8_t counter = screen_line - 70;
-        for (ij = 0; ij <= 26; ij++)
+        for (ij = 70; ij <= 79; ij++)
         {
-            output_small_byte(buffer[ij]);
+            output_small_byte_line(menuBuffer[ij],counter);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
@@ -658,9 +637,9 @@ void print_menu()
     {
 
         uint8_t counter = screen_line - 80;
-        for (ij = 0; ij <= 26; ij++)
+        for (ij = 80; ij <= 89; ij++)
         {
-            output_small_byte(buffer[ij]);
+            output_small_byte_line(menuBuffer[ij],counter);
             _delay_loop_1(delaybetweenchars);
         }
         _delay_loop_1(delaybetweenwords);
@@ -1268,6 +1247,8 @@ extern uint8_t GPS_fix;
 extern int16_t vario;
 uint16_t totalmsg = 0;
 extern int16_t relativedir;
+extern int16_t rcData[12];
+
 void update_data()
 {
     if (updatedAnalog)
@@ -1282,9 +1263,10 @@ void update_data()
     }
     if (updatedVolt)
     {
-        int voltvar = vario;
+        //rcData[0] = 1500;
+        int16_t voltvar = rcData[0];
         copy_to_buffer(voltvar, text_buffer_bottom_mid, 4, AS_INTEGER);
-        updatedVolt = 0;
+        updatedVolt = 0;    
     }
     if (updatedSats)
     {

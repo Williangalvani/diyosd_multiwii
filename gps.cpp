@@ -1,9 +1,9 @@
 #include "gps.h"
-
+#include "output.h"
 
 
 #define PIDITEMS 10
-#define RC_CHANS 8
+#define RC_CHANS 12
 int16_t rcData[RC_CHANS];    // interval [1000;2000]
 
 //==================================
@@ -36,7 +36,7 @@ uint8_t confD[PIDITEMS];
 //========================================
 //unsigned char show_plane_pos = EEPROM.read(5);
 
-int menuon = 0;
+int menuon = 1;
 
 
 long altitude_offset = 0;
@@ -274,27 +274,29 @@ void serialMSPCheck()
     }
     else if (cmdMSP == MSP_RC)
     {
-        for (int i = 0; i < RC_CHANS; i++)
+        for (int j = 0; j < RC_CHANS; j++)
         {
-            rcData[i] = read16();
+            rcData[j] = read16();
         }
+        
 
     }
-             /*  byteP[i] = read8(); byteI[i] = read8(); byteD[i] = read8();
-            switch (i)
-            {
-            case 0: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
-            case 1: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
-            case 2: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
-            case 3: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
-            case 7: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
-            case 8: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
-            case 9: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
-            //Different rates fot POS-4 POSR-5 NAVR-6
-            case 4: confP[i] = (byteP[i] / 100.0); confI[i] = (byteI[i] / 100.0); confD[i] = (byteD[i] / 1000.0); break;
-            case 5: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 100.0); confD[i] = (byteD[i] / 1000.0); break;
-            case 6: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 100.0); confD[i] = (byteD[i] / 1000.0); break;
-            }*/
+
+    /*  byteP[i] = read8(); byteI[i] = read8(); byteD[i] = read8();
+    switch (i)
+    {
+    case 0: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
+    case 1: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
+    case 2: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
+    case 3: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
+    case 7: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
+    case 8: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
+    case 9: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
+    //Different rates fot POS-4 POSR-5 NAVR-6
+    case 4: confP[i] = (byteP[i] / 100.0); confI[i] = (byteI[i] / 100.0); confD[i] = (byteD[i] / 1000.0); break;
+    case 5: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 100.0); confD[i] = (byteD[i] / 1000.0); break;
+    case 6: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 100.0); confD[i] = (byteD[i] / 1000.0); break;
+    }*/
     else if (cmdMSP == MSP_PID)
     {
 

@@ -51,7 +51,7 @@ unsigned char mahr[]={3,3,3,3,3,3}; // Stores mah characters (numbers) written t
 // Buffers
 //========================================
 unsigned char buffer[50];
-
+unsigned char menuBuffer[91];
 // Need an integer when reading large characeters (will exceed 256)
 int buffer2[12]={12,12,12,12,12,12,12,12,12,12,12,12};
 int buffer3[15];
