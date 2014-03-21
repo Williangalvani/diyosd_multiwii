@@ -10,12 +10,6 @@
 #define True 1
 #define False 0
 
-#define MSP_STATUS               101   //out message         cycletime & errors_count & sensor present & box activation & current setting number
-#define MSP_RAW_GPS              106   //out message         fix, numsat, lat, lon, alt, speed, ground course
-#define MSP_COMP_GPS             107   //out message         distance home, direction home
-#define MSP_ATTITUDE             108   //out message         2 angles 1 heading
-#define MSP_ALTITUDE             109   //out message         altitude, variometer
-#define MSP_ANALOG               110   //out message         vbat, powermetersum, rssi if available on RX
 
 #define AS_DECIMAL 1
 #define AS_INTEGER 0
@@ -44,10 +38,11 @@
 
 #define small_arrow_left  ('a' - 64) << 3;
 
-#define wait_before_next_char() delay2;
+#define wait_before_next_char() delay4;
 
 //extern uint16_t frame_counter = 0;
 
+char customMessage = 0;
 
 unsigned char toptext[12] = {'S'-64,'P'-64,'E'-64,'E'-64,'D'-64,'L'-64,'O'-64,'S'-64,'A'-64,'L'-64,'T'-64,20};
 
@@ -95,6 +90,7 @@ unsigned char mahr[]={3,3,3,3,3,3}; // Stores mah characters (numbers) written t
 //========================================
 unsigned char buffer[50];
 unsigned char menuBuffer[91];
+unsigned char menu_dim[10] = {0,0,0,0,0,0,0,0,0,0};
 // Need an integer when reading large characeters (will exceed 256)
 int buffer2[12]={12,12,12,12,12,12,12,12,12,12,12,12};
 int buffer3[15];
@@ -152,7 +148,7 @@ void print_altitude()
 {
 
     _delay_loop_1(2);
-
+    DimOn;
     for (int i = 0; i < 6; i++)
     {
         output_big_number_left_part(buffer3[9 + i]);
@@ -163,47 +159,8 @@ void print_altitude()
 
 
     }
-    /* output_big_number_left_part(buffer3[9]);
-     DimOn;
-     delay9
+    DimOff;
 
-     output_big_number_right_part(buffer3[9]);
-     delay4
-
-
-     output_big_number_left_part(buffer3[10]);
-     delay11;
-
-     output_big_number_right_part(buffer3[10]);
-     delay4
-
-
-     output_big_number_left_part(buffer3[11]);
-     delay11;
-
-     output_big_number_right_part(buffer3[11]);
-     delay4
-
-
-     output_big_number_left_part(buffer3[12]);
-     delay11;
-
-     output_big_number_right_part(buffer3[12]);
-     delay4
-
-
-     output_big_number_left_part(buffer3[13]);
-     delay11;
-
-     output_big_number_right_part(buffer3[13]);
-     delay3;
-
-     output_big_number_left_part(buffer3[14]);
-     delay11;
-
-     output_big_number_right_part(buffer3[14]);
-     delay4;
-     DimOff;*/
 }
 
 void print_large_3(int *buffer)
@@ -388,7 +345,7 @@ void print_bottom_large_numbers()
             delay11
 
             output_small_letter('U');
-            delay10
+            delay11
 
             output_small_letter('R');
             delay2
@@ -416,7 +373,7 @@ void print_bottom_large_numbers()
             delay10
 
             output_small_letter('A');
-            delay10
+            delay11
 
             output_small_letter('R');
             delay5
@@ -560,28 +517,30 @@ void print_menu()
 {
     int ij;
     screen_line = line - (summaryline + 1);
-    _delay_loop_1(10);
+
+    _delay_loop_1(20);
+
     //_delay_loop_1(65);
 
-    DimOn;
+    if (menu_dim[screen_line/10 ]){
+            DimOn;
+        }
 
-    if (screen_line == 0)
-    {
-        clear_menu();
-    }
-    else if (screen_line < 8 )
+    if (screen_line < 8 )
     {
         _delay_loop_1(18);
         for (ij = 0; ij <= 9; ij++)
         {
             output_small_byte(menuBuffer[ij]);
             wait_before_next_char();
+
         }
         _delay_loop_1(delaybetweenwords);
 
     }
     else if (screen_line > 10 && screen_line < 19 )
     {
+
         _delay_loop_1(14);
         uint8_t counter = screen_line - 10;
         for (ij = 10; ij <= 19; ij++)
@@ -1256,6 +1215,39 @@ void copy_to_buffer(int var, unsigned char *buffera, int digits, int is_decimal)
         }
     }
 }
+void copy_to_buffer2(int var, unsigned char *buffera, int digits, int is_decimal)
+{
+    // converts a decimal number to ascii indexes and injects to buffer
+    //
+    digits--;
+    int index = 0;
+    int is_negative = 0;
+    if (var < 0)
+    {
+        buffera[0] = 0;
+        index++;
+        var = abs(var);
+        is_negative = 1;
+    }
+
+    int chars = digits - index;
+    int gotdec = 0;
+    for (; chars >= 0; chars--)
+    {
+        int currentchar = digits - chars;
+        if ((is_decimal) && (chars == 1))
+        {
+            buffera[currentchar] = 1;
+            gotdec = 1;
+        }
+        else
+        {
+            (buffera[currentchar] = extract_digit(var, chars + gotdec + !is_decimal - 1) + 30) << 3;
+        }
+    }
+}
+
+
 
 void print_horizon()
 {
@@ -1270,7 +1262,7 @@ void update_data()
 {
     if (updatedAnalog)
     {
-        int curvar = totalmsg;
+        int curvar = confP[0];
         copy_to_buffer(curvar, currentr, 4, AS_DECIMAL);
 
 
@@ -1287,8 +1279,9 @@ void update_data()
     }
     if (updatedSats)
     {
-        satellitesr[0] = (GPS_numSat / 10) + 3 ;
-        satellitesr[1] = (GPS_numSat % 10) + 3;
+        copy_to_buffer(GPS_numSat,satellitesr,2,AS_INTEGER);
+        //satellitesr[0] = (GPS_numSat / 10) + 3 ;
+        //satellitesr[1] = (GPS_numSat % 10) + 3;
         updatedSats = 0;
     }
 
@@ -1376,7 +1369,11 @@ void send_serial_request()
 {
     totalmsg++;
     msgcounter++;
-    if (msgcounter >= 6)
+    if (customMessage)
+    {
+
+    }
+    if (msgcounter >= 7)
     {
         blankserialRequest(MSP_COMP_GPS);
         msgcounter = 0;
@@ -1400,6 +1397,9 @@ void send_serial_request()
     else if (msgcounter == 5 )
     {
         blankserialRequest(MSP_STATUS);
+    }else if (msgcounter == 6 && menuon )
+    {
+        blankserialRequest(MSP_RC);
     }
 
 }

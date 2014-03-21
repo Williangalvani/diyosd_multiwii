@@ -36,6 +36,7 @@ uint8_t confD[PIDITEMS];
 int menuon = 0;
 
 
+
 long altitude_offset = 0;
 
 unsigned char landed = 1;
@@ -53,8 +54,8 @@ char updatedVolt = 1;
 char updatedCur = 1;
 char updatedSats = 1;
 char updatedAnalog = 1;
-
-
+char rc_updated_flag = 0;
+char pid_reloaded_flag = 0;
 
 
 void update_gps_data()
@@ -76,16 +77,6 @@ void update_gps_data()
     }
 }
 
-/////////////////////////MULTIWII CODE
-#define MSP_STATUS               101   //out message         cycletime & errors_count & sensor present & box activation & current setting number
-#define MSP_RAW_GPS              106   //out message         fix, numsat, lat, lon, alt, speed, ground course
-#define MSP_COMP_GPS             107   //out message         distance home, direction home
-#define MSP_ATTITUDE             108   //out message         2 angles 1 heading
-#define MSP_ANALOG               110
-#define MSP_ALTITUDE             109   //out message         altitude, variometer
-#define MSP_RC                   105
-#define MSP_PID                  112
-#define MSP_SET_PID              202
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int MwAngle[2] = {0, 0};        // Those will hold Accelerator Angle
@@ -275,7 +266,8 @@ void serialMSPCheck()
         {
             rcData[j] = read16();
         }
-        
+        rc_updated_flag = 1;
+
 
     }
 
@@ -304,6 +296,7 @@ void serialMSPCheck()
             confD[i] = read8();
 
         }
+        pid_reloaded_flag = 1;
     }
 }
 
@@ -402,6 +395,26 @@ void blankserialRequest(uint8_t requestMSP)
 
 }
 
+void blankserialRequest(uint8_t requestMSP, char *payload, char payloadsize)
+{
+
+
+    uint8_t txCheckSum;
+    Serial.write('$');
+    Serial.write('M');
+    Serial.write('<');
+    Serial.write(payloadsize);
+    Serial.write(requestMSP);
+    while (payloadsize--)
+    {
+        txCheckSum ^= *payload;
+        Serial.write(*payload++);
+    }
+    Serial.write(txCheckSum);
+
+}
+
+
 void do_multiwii_communication()
 {
     update_data();
@@ -420,13 +433,3 @@ void do_multiwii_communication()
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void gps()
-{
-
-    while (1 == 1)
-    {
-        do_multiwii_communication();
-    }
-
-}

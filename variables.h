@@ -1,6 +1,20 @@
 
 #ifndef __variables_H
 #define __variables_H
+#include "Arduino.h"
+#include <avr/pgmspace.h>
+
+#define MSP_STATUS               101   //out message         cycletime & errors_count & sensor present & box activation & current setting number
+#define MSP_RAW_GPS              106   //out message         fix, numsat, lat, lon, alt, speed, ground course
+#define MSP_COMP_GPS             107   //out message         distance home, direction home
+#define MSP_ATTITUDE             108   //out message         2 angles 1 heading
+#define MSP_ANALOG               110
+#define MSP_ALTITUDE             109   //out message         altitude, variometer
+#define MSP_RC                   105
+#define MSP_PID                  112
+#define MSP_SET_PID              202
+
+
 extern unsigned char text_buffer_bottom_mid[];
 extern long los;           // home distance
 extern long altitude_num2;
@@ -15,6 +29,7 @@ extern char homepos;
 extern char GPSfix;
 extern uint8_t GPS_numSat;
 
+extern const unsigned char menu_intro[];
 extern int current_num;
 extern int altitude_negative;
 extern unsigned char avg_speedr[];
@@ -33,6 +48,7 @@ extern char updatedCur;
 extern char updatedSats  ;
 extern char updatedAtt  ;
 extern char updatedAnalog;
+extern char pid_reloaded_flag;
 
 extern int MwAngle[];
 extern unsigned char avg_speedr[];
@@ -52,8 +68,19 @@ extern uint16_t rssi;
 extern uint8_t GPS_fix;
 extern int16_t vario;
 
+extern unsigned char menuBuffer[91];
+extern unsigned char menu_dim[10];
+
 extern int16_t relativedir;
 extern int16_t rcData[12];
+extern char left;
+extern char right;
+extern char up;
+extern char down;
+extern char rc_updated_flag;
 
+extern uint8_t confP[10];
+extern uint8_t confI[10];
+extern uint8_t confD[10];
 
 #endif

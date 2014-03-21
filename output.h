@@ -7,6 +7,9 @@ void detectframe();
 void detectline();
 void serialMSPreceive();
 void update_data();
+void clear_menu();
+void copy_to_buffer(int var, unsigned char *buffera, int digits, int is_decimal);
+void copy_to_buffer2(int var, unsigned char *buffera, int digits, int is_decimal);
 
 #define True 1
 #define False 0

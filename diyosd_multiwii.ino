@@ -168,7 +168,11 @@ ISR(ANALOG_COMP_vect)
 
 void loop()
 {
-    gps();
+    while (1 == 1)
+    {
+        do_multiwii_communication();
+        process_menu();
+    }
 
 }
 
