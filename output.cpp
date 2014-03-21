@@ -25,7 +25,7 @@
 #define output_small_byte(byte) SPDR = pgm_read_byte_near(&letters[byte + (screen_line)]);
 #define output_small_byte_line(byte, aline) SPDR = pgm_read_byte_near(&letters[byte + (aline)]);
 
-#define output_small_number_line(number,aline) SPDR = numbers[(number) + (aline)];
+#define output_small_number_line(number,aline) SPDR = pgm_read_byte_near(&numbers[(number) + (aline)]);
 #define to_index(ch) (ch - 64) << 3;
 
 //#define output_big_number_left_part(buffer) SPDR = LargeNumbers[buffer + 2 * screen_line];
@@ -525,12 +525,15 @@ void print_menu()
                 _delay_loop_1(3);
                 output_small_byte_line(menuBuffer[ij++], counter);
                 _delay_loop_1(3);
-                output_small_number_line(menuBuffer[ij++] << 3, counter);
-                _delay_loop_1(2);
-                output_small_number_line(menuBuffer[ij++] << 3, counter);
-                _delay_loop_1(2);
-                output_small_number_line(menuBuffer[ij++] << 3, counter);
-                _delay_loop_1(2);
+                if (i > 2 && i < 6)
+                {
+                    output_small_number_line(menuBuffer[ij++] << 3, counter);
+                    _delay_loop_1(2);
+                    output_small_number_line(menuBuffer[ij++] << 3, counter);
+                    _delay_loop_1(2);
+                    output_small_number_line(menuBuffer[ij++] << 3, counter);
+                    _delay_loop_1(2);
+                }
                 DimOff;
 
             }
@@ -693,7 +696,7 @@ void print_gps_sats()
         }
 
         // Writes ':'
-        SPDR = numbers[104 + screen_line];
+        SPDR = pgm_read_byte_near(&numbers[104 + screen_line]);
         _delay_loop_1(10);
 
         for (unsigned char ij = 3; ij < 5; ij++)
@@ -714,7 +717,7 @@ void print_gps_sats()
             _delay_loop_1(2);
         }
 
-        SPDR = numbers[104 + screen_line];
+        SPDR = pgm_read_byte_near(&numbers[104 + screen_line]);
         _delay_loop_1(6);
 
 
@@ -1073,10 +1076,25 @@ void send_serial_request()
     msgcounter++;
     if (customMessage)
     {
-        serialRequest(customMessage, data, data_length);
-        customMessage = 0;
+        if (customMessage == MSP_SET_PID)
+        {
+            send_msp_set_pid();
+            customMessage = MSP_PID;
+            data = 0;
+            data_length = 0;
+        }
+        else
+        {
+            if (data_length == 0)
+            {
+                blankserialRequest(customMessage);
+            }
+            customMessage = 0;
+        }
+
+
     }
-    if (msgcounter >= 7)
+    else if (msgcounter >= 7)
     {
         blankserialRequest(MSP_COMP_GPS);
         msgcounter = 0;
@@ -1101,7 +1119,7 @@ void send_serial_request()
     {
         blankserialRequest(MSP_STATUS);
     }
-    else if (msgcounter == 6 && menuon )
+    else if (msgcounter == 6 )
     {
         blankserialRequest(MSP_RC);
     }

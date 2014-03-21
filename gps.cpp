@@ -395,6 +395,35 @@ void blankserialRequest(uint8_t requestMSP)
 
 }
 
+
+void send_msp_set_pid()
+{
+    uint8_t txCheckSum;
+    uint8_t txSize;
+    txCheckSum = 0;
+
+    Serial.write('$');
+    Serial.write('M');
+    Serial.write('<');
+    txSize = 30;
+    Serial.write(txSize);
+    txCheckSum ^= txSize;
+
+    Serial.write(MSP_SET_PID);
+    txCheckSum ^= MSP_SET_PID;
+    for (int i = 0; i < PIDITEMS; i++)
+    {
+        Serial.write((char)confP[i]);
+        txCheckSum ^= confP[i];
+        Serial.write((char)confI[i]);
+        txCheckSum ^= confI[i];
+        Serial.write((char)confD[i]);
+        txCheckSum ^= confD[i];
+    }
+    Serial.write(txCheckSum);
+
+}
+
 void serialRequest(uint8_t requestMSP, char *payload, char payloadsize)
 {
 
@@ -405,6 +434,8 @@ void serialRequest(uint8_t requestMSP, char *payload, char payloadsize)
     Serial.write('<');
     Serial.write(payloadsize);
     Serial.write(requestMSP);
+    txCheckSum = payloadsize;
+    txCheckSum ^= requestMSP;
     while (payloadsize--)
     {
         txCheckSum ^= *payload;
