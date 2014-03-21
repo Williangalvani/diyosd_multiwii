@@ -146,12 +146,27 @@ void go_to_menu(char menu)
         }
         break;
     case (PID_MENU):
+        printing_numbers = 1;
         for (int i = 0; i < 10; i++)
         {
             char current_pos = i * 10;
             strcpy_P((char *)menuBuffer + current_pos, (PGM_P)pid_items[i]);
             menuBuffer[6 + current_pos] = pid_showing;
-            copy_to_buffer2(confP[i], &menuBuffer[current_pos + 7], 3, AS_INTEGER);
+            copy_to_buffer(confP[i], &menuBuffer[current_pos + 7], 3, AS_INTEGER);
+            menuBuffer[current_pos + 7] = 3;
+
+        }
+        for (int i = 0; i < 90; i++)
+        {
+            menuBuffer[i] = to_index(menuBuffer[i]);
+        }
+        menuBuffer[7] = 3;
+
+        for (int i = 0; i < 10; i++)
+        {
+            char current_pos = i * 10;
+            copy_to_buffer(confP[i], &menuBuffer[current_pos + 7], 3, AS_INTEGER);
+            menuBuffer[current_pos + 7] = 3;
 
         }
 
@@ -160,10 +175,6 @@ void go_to_menu(char menu)
 
     }
 
-    for (int i = 0; i < 90; i++)
-    {
-        menuBuffer[i] = to_index(menuBuffer[i]);
-    }
 
 
 

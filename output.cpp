@@ -24,6 +24,7 @@
 #define output_small_byte(byte) SPDR = pgm_read_byte_near(&letters[byte + (screen_line)]);
 #define output_small_byte_line(byte, aline) SPDR = pgm_read_byte_near(&letters[byte + (aline)]);
 
+#define output_small_number_line(number,aline) SPDR = numbers[(number) + (aline)];
 #define to_index(ch) (ch - 64) << 3;
 
 //#define output_big_number_left_part(buffer) SPDR = LargeNumbers[buffer + 2 * screen_line];
@@ -31,6 +32,7 @@
 
 #define output_big_number_left_part(buffer) SPDR = pgm_read_byte_near(&LargeNumbers[buffer + 2 * screen_line]);
 #define output_big_number_right_part(buffer) SPDR = pgm_read_byte_near(&LargeNumbers[buffer + 2 * screen_line + 1]);
+
 
 
 #define delaybetweenchars 2
@@ -44,18 +46,18 @@
 
 char customMessage = 0;
 
-unsigned char toptext[12] = {'S'-64,'P'-64,'E'-64,'E'-64,'D'-64,'L'-64,'O'-64,'S'-64,'A'-64,'L'-64,'T'-64,20};
+unsigned char toptext[12] = {'S' - 64, 'P' - 64, 'E' - 64, 'E' - 64, 'D' - 64, 'L' - 64, 'O' - 64, 'S' - 64, 'A' - 64, 'L' - 64, 'T' - 64, 20};
 
 // Linenumber
 int line = 0;
-int screen_line =0;
+int screen_line = 0;
 
 // Standard integers to use with for/while loops etc.
-int a=0;
-int i=0;
-int k=0;
+int a = 0;
+int i = 0;
+int k = 0;
 
-unsigned char ii=0;
+unsigned char ii = 0;
 
 
 #include "Arduino.h"
@@ -67,22 +69,22 @@ unsigned char ii=0;
 // Data for mAh
 //========================================
 // Measuring amps and mah's;
-int current=0;
+int current = 0;
 
-unsigned char currentr[] = {3,3,3,3,3}; // Stores current characters (numbers) written to screen
-unsigned char text_buffer_bottom_mid[] = {3,3,3,3,3}; // Stores current characters (numbers) written to screen
-int bat_volt =0;
+unsigned char currentr[] = {3, 3, 3, 3, 3}; // Stores current characters (numbers) written to screen
+unsigned char text_buffer_bottom_mid[] = {3, 3, 3, 3, 3}; // Stores current characters (numbers) written to screen
+int bat_volt = 0;
 
 long mah = 0;
-long mahtemp=0;
-unsigned char mahr[]={3,3,3,3,3,3}; // Stores mah characters (numbers) written to screen
+long mahtemp = 0;
+unsigned char mahr[] = {3, 3, 3, 3, 3, 3}; // Stores mah characters (numbers) written to screen
 
 
 //ADC (It's a 10 bit ADC, so we need to read from 2 registers and put them together. This is what ADSCtemp is used for
- int ADCtemp=0;
- int ADCtemp2=0;
- int ADCreal=0;  // Just a stupid name for the complete analog-read
- int ADCreal2=0; // Can be replaced with ADCreal
+int ADCtemp = 0;
+int ADCtemp2 = 0;
+int ADCreal = 0; // Just a stupid name for the complete analog-read
+int ADCreal2 = 0; // Can be replaced with ADCreal
 
 
 //========================================
@@ -90,19 +92,19 @@ unsigned char mahr[]={3,3,3,3,3,3}; // Stores mah characters (numbers) written t
 //========================================
 unsigned char buffer[50];
 unsigned char menuBuffer[91];
-unsigned char menu_dim[10] = {0,0,0,0,0,0,0,0,0,0};
+unsigned char menu_dim[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 // Need an integer when reading large characeters (will exceed 256)
-int buffer2[12]={12,12,12,12,12,12,12,12,12,12,12,12};
+int buffer2[12] = {12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12};
 int buffer3[15];
-    
+
 
 //========================================
 // Mixed
 //========================================
 
 unsigned int mahkm_buf[5];
-unsigned char showcoordinates=1;
-unsigned char rssir[]={3,3,3};
+unsigned char showcoordinates = 1;
+unsigned char rssir[] = {3, 3, 3};
 
 
 
@@ -111,7 +113,7 @@ unsigned char satellitesr[3] = {3, 3, 3};
 
 int horizon_lenght = 1;
 char horizon_sprite = 1;
-int horizon_repeat = 0; 
+int horizon_repeat = 0;
 
 
 unsigned char horizonBuffer[90];
@@ -120,6 +122,7 @@ unsigned char speedr[] = {1, 1, 1, 1};
 
 int current_letter = 0;
 unsigned char charcounter;
+char printing_numbers = 0;
 
 void print_large_3(int *buffer);
 void print_large_5(int *buffer);
@@ -130,8 +133,8 @@ void draw_arrow()
     SPDR = pgm_read_byte_near(&HomeArrow[buffer2[11] + 2 * screen_line]);
     DimOn;
     delay13
-    
-    SPDR = pgm_read_byte_near(&HomeArrow[buffer2[11] + 2 * screen_line+1]);
+
+    SPDR = pgm_read_byte_near(&HomeArrow[buffer2[11] + 2 * screen_line + 1]);
     delay5;
     DimOff;
 
@@ -507,10 +510,10 @@ void print_version()
 
 void clear_menu()
 {
-        for(int i =0;i<91;i++)
-        {
-            menuBuffer[i] = to_index(' ') ;
-        }
+    for (int i = 0; i < 91; i++)
+    {
+        menuBuffer[i] = to_index(' ') ;
+    }
 }
 
 void print_menu()
@@ -518,124 +521,68 @@ void print_menu()
     int ij;
     screen_line = line - (summaryline + 1);
 
-    _delay_loop_1(20);
+    _delay_loop_1(5);
 
     //_delay_loop_1(65);
-
-    if (menu_dim[screen_line/10 ]){
-            DimOn;
-        }
-
-    if (screen_line < 8 )
+    char current_line = screen_line / 10 ;
+    if (menu_dim[current_line])
     {
-        _delay_loop_1(18);
-        for (ij = 0; ij <= 9; ij++)
-        {
-            output_small_byte(menuBuffer[ij]);
-            wait_before_next_char();
-
-        }
-        _delay_loop_1(delaybetweenwords);
-
+        DimOn;
     }
-    else if (screen_line > 10 && screen_line < 19 )
+
+
+    for (int i = 0; i < 10; i++)
     {
-
-        _delay_loop_1(14);
-        uint8_t counter = screen_line - 10;
-        for (ij = 10; ij <= 19; ij++)
+        if (screen_line > i * 10 && screen_line < i * 10 + 9 )
         {
-            output_small_byte_line(menuBuffer[ij],counter);
-            wait_before_next_char();
+
+            if (printing_numbers)
+            {
+                //_delay_loop_1(50 - 5 * i);
+                ij = 10 * i;
+                uint8_t counter = screen_line - 10 * i;
+
+                output_small_byte_line(menuBuffer[ij++], counter);
+                _delay_loop_1(3);
+                output_small_byte_line(menuBuffer[ij++], counter);
+                _delay_loop_1(3);
+                output_small_byte_line(menuBuffer[ij++], counter);
+                _delay_loop_1(3);
+                output_small_byte_line(menuBuffer[ij++], counter);
+                _delay_loop_1(3);
+                output_small_byte_line(menuBuffer[ij++], counter);
+                _delay_loop_1(3);
+                output_small_byte_line(menuBuffer[ij++], counter);
+                _delay_loop_1(3);
+                output_small_byte_line(menuBuffer[ij++], counter);
+                _delay_loop_1(3);
+                output_small_number_line(menuBuffer[ij++] << 3, counter);
+                _delay_loop_1(2);
+                output_small_number_line(menuBuffer[ij++] << 3, counter);
+                _delay_loop_1(2);
+                output_small_number_line(menuBuffer[ij++] << 3, counter);
+                _delay_loop_1(2);
+
+
+            }
+            else
+            {
+
+
+                _delay_loop_1(50 - 5 * i);
+                uint8_t counter = screen_line - 10 * i;
+                for (ij = 10 * i; ij <= 10 * i + 9; ij++)
+                {
+
+                    output_small_byte_line(menuBuffer[ij], counter);
+                    wait_before_next_char();
+                }
+            }
+            DimOff;
+
         }
-        _delay_loop_1(delaybetweenwords);
-
     }
-    else if (screen_line > 20 && screen_line < 29 )
-    {
-        _delay_loop_1(12);
-        uint8_t counter = screen_line - 20;
-        for (ij = 20; ij <= 29; ij++)
-        {
-            output_small_byte_line(menuBuffer[ij],counter);
-            wait_before_next_char();
-        }
-        _delay_loop_1(delaybetweenwords);
 
-    }
-    else if (screen_line > 29 && screen_line < 39 )
-    {
-        _delay_loop_1(10);
-        uint8_t counter = screen_line - 30;
-        for (ij = 30; ij <= 39; ij++)
-        {
-            output_small_byte_line(menuBuffer[ij],counter);
-            wait_before_next_char();
-        }
-        _delay_loop_1(delaybetweenwords);
-
-    }
-    else if (screen_line > 39 && screen_line < 49 )
-    {
-        _delay_loop_1(8);
-        uint8_t counter = screen_line - 40;
-        for (ij = 40; ij <= 49; ij++)
-        {
-            output_small_byte_line(menuBuffer[ij],counter);
-            wait_before_next_char();
-        }
-        _delay_loop_1(delaybetweenwords);
-
-    }
-    else if (screen_line > 49 && screen_line < 59 )
-    {
-        _delay_loop_1(6);
-        uint8_t counter = screen_line - 50;
-        for (ij = 50; ij <= 59; ij++)
-        {
-            output_small_byte_line(menuBuffer[ij],counter);
-            wait_before_next_char();
-        }
-        _delay_loop_1(delaybetweenwords);
-
-    }
-    else if (screen_line > 59 && screen_line < 69 )
-    {
-        _delay_loop_1(4);
-        uint8_t counter = screen_line - 60;
-        for (ij = 60; ij <= 69; ij++)
-        {
-            output_small_byte_line(menuBuffer[ij],counter);
-            wait_before_next_char();
-        }
-        _delay_loop_1(delaybetweenwords);
-
-    }
-    else if (screen_line > 69 && screen_line < 79 )
-    {
-        _delay_loop_1(2);
-        uint8_t counter = screen_line - 70;
-        for (ij = 70; ij <= 79; ij++)
-        {
-            output_small_byte_line(menuBuffer[ij],counter);
-            wait_before_next_char();
-        }
-        _delay_loop_1(delaybetweenwords);
-
-    }
-    else if (screen_line > 79 && screen_line < 89 )
-    {
-
-        uint8_t counter = screen_line - 80;
-        for (ij = 80; ij <= 89; ij++)
-        {
-            output_small_byte_line(menuBuffer[ij],counter);
-            wait_before_next_char();
-        }
-        _delay_loop_1(delaybetweenwords);
-
-    }
-    DimOff;
 }
 
 
@@ -965,7 +912,7 @@ void print_gps_sats()
 
         for (unsigned char ij = 3; ij < 5; ij++)
         {
-            SPDR = numbers[buffer[ij] + (screen_line)];
+            output_small_number_line(buffer[ij], screen_line);
             _delay_loop_1(5);
         }
         _delay_loop_1(2);
@@ -1215,37 +1162,6 @@ void copy_to_buffer(int var, unsigned char *buffera, int digits, int is_decimal)
         }
     }
 }
-void copy_to_buffer2(int var, unsigned char *buffera, int digits, int is_decimal)
-{
-    // converts a decimal number to ascii indexes and injects to buffer
-    //
-    digits--;
-    int index = 0;
-    int is_negative = 0;
-    if (var < 0)
-    {
-        buffera[0] = 0;
-        index++;
-        var = abs(var);
-        is_negative = 1;
-    }
-
-    int chars = digits - index;
-    int gotdec = 0;
-    for (; chars >= 0; chars--)
-    {
-        int currentchar = digits - chars;
-        if ((is_decimal) && (chars == 1))
-        {
-            buffera[currentchar] = 1;
-            gotdec = 1;
-        }
-        else
-        {
-            (buffera[currentchar] = extract_digit(var, chars + gotdec + !is_decimal - 1) + 30) << 3;
-        }
-    }
-}
 
 
 
@@ -1275,11 +1191,11 @@ void update_data()
         //rcData[0] = 1500;
         int16_t voltvar = rcData[0];
         copy_to_buffer(voltvar, text_buffer_bottom_mid, 4, AS_INTEGER);
-        updatedVolt = 0;    
+        updatedVolt = 0;
     }
     if (updatedSats)
     {
-        copy_to_buffer(GPS_numSat,satellitesr,2,AS_INTEGER);
+        copy_to_buffer(GPS_numSat, satellitesr, 2, AS_INTEGER);
         //satellitesr[0] = (GPS_numSat / 10) + 3 ;
         //satellitesr[1] = (GPS_numSat % 10) + 3;
         updatedSats = 0;
@@ -1397,7 +1313,8 @@ void send_serial_request()
     else if (msgcounter == 5 )
     {
         blankserialRequest(MSP_STATUS);
-    }else if (msgcounter == 6 && menuon )
+    }
+    else if (msgcounter == 6 && menuon )
     {
         blankserialRequest(MSP_RC);
     }

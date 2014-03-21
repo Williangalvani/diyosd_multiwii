@@ -49,6 +49,7 @@ extern char updatedSats  ;
 extern char updatedAtt  ;
 extern char updatedAnalog;
 extern char pid_reloaded_flag;
+extern char printing_numbers;
 
 extern int MwAngle[];
 extern unsigned char avg_speedr[];
