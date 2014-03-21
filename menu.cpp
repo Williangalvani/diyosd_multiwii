@@ -11,6 +11,8 @@ char left = 0;
 char right = 0;
 char up = 0;
 char down = 0;
+char more = 0;
+char less = 0;
 
 char selectedMenu = 0;
 char menus_Available = 10;
@@ -37,7 +39,8 @@ void pid_right()
     else if (pid_showing == 'I')
     {
         pid_showing = 'D';
-    }else if (pid_showing == 'D')
+    }
+    else if (pid_showing == 'D')
     {
         pid_showing = 'P';
     }
@@ -52,7 +55,8 @@ void pid_left()
     else if (pid_showing == 'D')
     {
         pid_showing = 'I';
-    }else if (pid_showing == 'I')
+    }
+    else if (pid_showing == 'I')
     {
         pid_showing = 'P';
     }
@@ -100,6 +104,29 @@ void menu_right()
         pid_right();
         break;
     }
+}
+
+void menu_increase(char delta)
+{
+    switch (current_menu)
+    {
+    case PID_MENU:
+        switch (pid_showing)
+        {
+        case 'P':
+            confP[selectedMenu]+=delta;
+            break;
+        case 'I':
+            confI[selectedMenu]+=delta;
+            break;
+        case 'D':
+            confD[selectedMenu]+=delta;
+            break;
+        }
+        pid_reloaded_flag = 1;
+        break;
+    }
+
 }
 
 
@@ -151,7 +178,18 @@ void process_menu()
             down++;
             up = 0;
         }
-
+        /////////////////////////////////increase/decrease///////////////////////////////////
+        if (rcData[2] > 1800)
+        {
+            more++;
+            less = 0;
+        }
+        else if (rcData[2] < 1300)
+        {
+            less++;
+            more = 0;
+        }
+        //////////////////////////////////////////////////////////////////////////
         if (down > 5)
         {
             down = 0;
@@ -171,6 +209,16 @@ void process_menu()
         {
             right = 0;
             menu_right();
+        }
+        if (more > 5)
+        {
+            more = 0;
+            menu_increase(1);
+        }
+        if (less > 5)
+        {
+            less = 0;
+            menu_increase(-1);
         }
         rc_updated_flag = 0;
     }
