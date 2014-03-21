@@ -28,6 +28,38 @@ void menu_left();
 void menu_down();
 void menu_up();
 
+void pid_right()
+{
+    if (pid_showing == 'P')
+    {
+        pid_showing = 'I';
+    }
+    else if (pid_showing == 'I')
+    {
+        pid_showing = 'D';
+    }else if (pid_showing == 'D')
+    {
+        pid_showing = 'P';
+    }
+    pid_reloaded_flag = 1;
+}
+void pid_left()
+{
+    if (pid_showing == 'P')
+    {
+        pid_showing = 'D';
+    }
+    else if (pid_showing == 'D')
+    {
+        pid_showing = 'I';
+    }else if (pid_showing == 'I')
+    {
+        pid_showing = 'P';
+    }
+    pid_reloaded_flag = 1;
+}
+
+
 void menu_up()
 {
     menu_dim[selectedMenu] = 0;
@@ -55,6 +87,7 @@ void menu_left()
     switch (current_menu)
     {
     case (PID_MENU):
+        pid_left();
         break;
     }
 }
@@ -64,6 +97,7 @@ void menu_right()
     switch (current_menu)
     {
     case (PID_MENU):
+        pid_right();
         break;
     }
 }
@@ -128,6 +162,16 @@ void process_menu()
             up = 0;
             menu_up();
         }
+        if (left > 5)
+        {
+            left = 0;
+            menu_left();
+        }
+        if (right > 5)
+        {
+            right = 0;
+            menu_right();
+        }
         rc_updated_flag = 0;
     }
 
@@ -145,7 +189,12 @@ void go_to_menu(char menu)
             menuBuffer[i] = to_index(menuBuffer[i]);
         }
         break;
+
+
+
+
     case (PID_MENU):
+        customMessage = MSP_PID;
         printing_numbers = 1;
         for (int i = 0; i < 10; i++)
         {
@@ -166,7 +215,6 @@ void go_to_menu(char menu)
         {
             char current_pos = i * 10;
             copy_to_buffer(confP[i], &menuBuffer[current_pos + 7], 3, AS_INTEGER);
-            menuBuffer[current_pos + 7] = 3;
 
         }
 

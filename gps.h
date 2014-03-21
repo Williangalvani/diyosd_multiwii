@@ -9,6 +9,7 @@
 //include "config.h"
 void gps();
 void do_multiwii_communication();
+void serialRequest(uint8_t requestMSP, char *payload, char payloadsize);
 
 
 #endif

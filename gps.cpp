@@ -395,7 +395,7 @@ void blankserialRequest(uint8_t requestMSP)
 
 }
 
-void blankserialRequest(uint8_t requestMSP, char *payload, char payloadsize)
+void serialRequest(uint8_t requestMSP, char *payload, char payloadsize)
 {
 
 

@@ -3,6 +3,7 @@
 #include "variables.h"
 #include "output.h"
 #include "config.h"
+#include "gps.h"
 
 
 
@@ -45,6 +46,8 @@
 //extern uint16_t frame_counter = 0;
 
 char customMessage = 0;
+char *data;
+char data_length = 0;
 
 unsigned char toptext[12] = {'S' - 64, 'P' - 64, 'E' - 64, 'E' - 64, 'D' - 64, 'L' - 64, 'O' - 64, 'S' - 64, 'A' - 64, 'L' - 64, 'T' - 64, 20};
 
@@ -524,21 +527,25 @@ void print_menu()
     _delay_loop_1(5);
 
     //_delay_loop_1(65);
-    char current_line = screen_line / 10 ;
-    if (menu_dim[current_line])
-    {
-        DimOn;
-    }
+
+
 
 
     for (int i = 0; i < 10; i++)
     {
+
         if (screen_line > i * 10 && screen_line < i * 10 + 9 )
         {
 
+
             if (printing_numbers)
             {
-                //_delay_loop_1(50 - 5 * i);
+                _delay_loop_1(100 - 10 * i);
+                if (menu_dim[i])
+                {
+                    DimOn;
+                }
+
                 ij = 10 * i;
                 uint8_t counter = screen_line - 10 * i;
 
@@ -562,13 +569,11 @@ void print_menu()
                 _delay_loop_1(2);
                 output_small_number_line(menuBuffer[ij++] << 3, counter);
                 _delay_loop_1(2);
-
+                DimOff;
 
             }
             else
             {
-
-
                 _delay_loop_1(50 - 5 * i);
                 uint8_t counter = screen_line - 10 * i;
                 for (ij = 10 * i; ij <= 10 * i + 9; ij++)
@@ -577,11 +582,13 @@ void print_menu()
                     output_small_byte_line(menuBuffer[ij], counter);
                     wait_before_next_char();
                 }
+                DimOff;
             }
-            DimOff;
+
 
         }
     }
+    
 
 }
 
@@ -1287,7 +1294,8 @@ void send_serial_request()
     msgcounter++;
     if (customMessage)
     {
-
+        serialRequest(customMessage, data, data_length);
+        customMessage = 0;
     }
     if (msgcounter >= 7)
     {
