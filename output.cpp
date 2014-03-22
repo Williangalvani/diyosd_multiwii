@@ -45,7 +45,7 @@
 
 //extern uint16_t frame_counter = 0;
 
-char customMessage = 0;
+unsigned char customMessage = 0;
 char *data;
 char data_length = 0;
 
