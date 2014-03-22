@@ -1,11 +1,13 @@
 
-// Written by Dennis Frie - 2011
+// Depeloped by Willian GAavani - 2014
+// Contact: williangalvani@gmail.com
+
+
+// Based on work by Dennis Frie - 2011
 // Contact: Dennis.frie@gmail.com
 
 // Discussion:
 // www.rcgroups.com/forums/showthread.php?t=1473207
-
-// Support DIY hardware and SimpleOSD Open
 
 // Notes on DIY hardware pins:;
 // pin 6 = PD6 / AIN0 (Reference voltage)
@@ -13,7 +15,6 @@
 // Pin 11 = MOSI (SPI) used for pixel-generation.
 // Pin 8 = Dimming (Optional)
 
-// GPS should be configured to NMEA with GPGGA and GPRMC strings.
 
 #include <avr/delay.h>
 

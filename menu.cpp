@@ -3,8 +3,11 @@
 #include <avr/pgmspace.h>
 #include "output.h"
 
-PROGMEM const unsigned char menu_intro[] = "PID:                                                                       ";
+PROGMEM const unsigned char menu_intro[] = "WELCOME                                                                     ";
 PROGMEM const unsigned char pid_items[][6] = {"ROLL", "PITCH", "YAW", "ALT", "POS", "POSR", "NAVR", "LEVEL", "MAG", "TPA"};
+
+PROGMEM const unsigned char words[][7] = {"SAVE ", "RELOAD"};
+PROGMEM const unsigned char menu_titles[][6] = {"PIDS ", "TPA"};
 
 
 char left = 0;
@@ -14,55 +17,145 @@ char down = 0;
 char more = 0;
 char less = 0;
 
+char upright = 0;
+
+
+int current_pid_item = 0;
 char selectedMenu = 0;
-char menus_Available = 10;
+char menus_Available = 9;
 char current_menu = 0;
 
-char pid_showing = 'P';
 
 #define INTRO_MENU 1
 
 #define PID_MENU 2
+
+#define last_menu 2
+
+#define first_menu 1
 
 void go_to_menu(char menu);
 void menu_right();
 void menu_left();
 void menu_down();
 void menu_up();
+void update_pid_on_screen();
+
+void save_pids()
+{
+    customMessage = MSP_SET_PID;
+}
+
+void change_menu(char direction)
+{
+    current_menu = current_menu + direction;
+    if (current_menu > last_menu)
+    {
+        current_menu = first_menu;
+    }
+    else if (current_menu < first_menu)
+    {
+        current_menu = last_menu;
+    }
+    if (current_menu == PID_MENU)
+    {
+        customMessage = MSP_PID;
+    }
+    go_to_menu(current_menu);
+}
+
+void intro_left()
+{
+    change_menu(-1);
+}
+
+void intro_right()
+{
+    change_menu(1);
+}
 
 void pid_right()
 {
-    if (pid_showing == 'P')
+    switch (selectedMenu)
     {
-        pid_showing = 'I';
+    case 0:
+        change_menu(1);
+        break;
+    case 1:
+        current_pid_item++;
+
+        break;
+    case 3:
+        confP[current_pid_item]++;
+        update_pid_on_screen();
+        break;
+    case 4:
+        confI[current_pid_item]++;
+        update_pid_on_screen();
+        break;
+    case 5:
+        confD[current_pid_item]++;
+        update_pid_on_screen();
+        break;
+    case 6:
+        save_pids();
+        break;
+
+    case 2:
+        current_pid_item++;
+        if (current_pid_item >= 10)
+        {
+            current_pid_item = 0;
+        }
+        go_to_menu(PID_MENU);
+        break;
+    case 7:
+        customMessage = MSP_PID;
+        break;
     }
-    else if (pid_showing == 'I')
-    {
-        pid_showing = 'D';
-    }
-    else if (pid_showing == 'D')
-    {
-        pid_showing = 'P';
-    }
-    pid_reloaded_flag = 1;
-}
-void pid_left()
-{
-    if (pid_showing == 'P')
-    {
-        pid_showing = 'D';
-    }
-    else if (pid_showing == 'D')
-    {
-        pid_showing = 'I';
-    }
-    else if (pid_showing == 'I')
-    {
-        pid_showing = 'P';
-    }
-    pid_reloaded_flag = 1;
 }
 
+
+void pid_left()
+{
+    switch (selectedMenu)
+    {
+    case 0:
+        change_menu(-1);
+        break;
+    case 1:
+        current_pid_item--;
+        break;
+    case 3:
+        confP[current_pid_item]--;
+        update_pid_on_screen();
+        break;
+    case 4:
+        confI[current_pid_item]--;
+        update_pid_on_screen();
+        break;
+    case 5:
+        confD[current_pid_item]--;
+        update_pid_on_screen();
+        break;
+    case 6:
+        save_pids();
+        break;
+
+    case 2:
+        current_pid_item--;
+        if (current_pid_item < 0)
+        {
+            current_pid_item = 9;
+        }
+        go_to_menu(PID_MENU);
+        break;
+    case 7:
+        customMessage = MSP_PID;
+        break;
+    }
+
+}
 
 void menu_up()
 {
@@ -93,6 +186,9 @@ void menu_left()
     case (PID_MENU):
         pid_left();
         break;
+    case (INTRO_MENU):
+        intro_left();
+        break;
     }
 }
 
@@ -103,29 +199,15 @@ void menu_right()
     case (PID_MENU):
         pid_right();
         break;
+    case (INTRO_MENU):
+        intro_right();
+        break;
     }
 }
 
 void menu_increase(char delta)
 {
-    switch (current_menu)
-    {
-    case PID_MENU:
-        switch (pid_showing)
-        {
-        case 'P':
-            confP[selectedMenu]+=delta;
-            break;
-        case 'I':
-            confI[selectedMenu]+=delta;
-            break;
-        case 'D':
-            confD[selectedMenu]+=delta;
-            break;
-        }
-        pid_reloaded_flag = 1;
-        break;
-    }
+
 
 }
 
@@ -133,20 +215,12 @@ void menu_increase(char delta)
 
 void process_menu()
 {
-    if (mode_armed)
-    {
-        menuon = 0;
-    }
-    else
-    {
-        menuon = 1;
-    }
+
     if (menuon)
     {
         if (current_menu == 0)
         {
-            clear_menu();
-            go_to_menu(PID_MENU);
+            change_menu(1);
         }
         if (current_menu == PID_MENU && pid_reloaded_flag)
         {
@@ -189,40 +263,71 @@ void process_menu()
             less++;
             more = 0;
         }
-        //////////////////////////////////////////////////////////////////////////
-        if (down > 5)
+        if (rcData[2] < 1300 && rcData[3] < 1300)
         {
-            down = 0;
-            menu_down();
+            upright++;
         }
-        if (up > 5)
+        else
         {
-            up = 0;
-            menu_up();
+            upright = 0;
         }
-        if (left > 5)
+
+        if (upright > 5)
         {
-            left = 0;
-            menu_left();
+            upright = 0;
+            if (!mode_armed)
+            {
+                menuon = !menuon;
+            }
+
         }
-        if (right > 5)
+        if (menuon)
         {
-            right = 0;
-            menu_right();
-        }
-        if (more > 5)
-        {
-            more = 0;
-            menu_increase(1);
-        }
-        if (less > 5)
-        {
-            less = 0;
-            menu_increase(-1);
+            //////////////////////////////////////////////////////////////////////////
+            if (down > 3)
+            {
+                down = 0;
+                menu_down();
+            }
+            if (up > 3)
+            {
+                up = 0;
+                menu_up();
+            }
+            if (left > 3)
+            {
+                left = 0;
+                menu_left();
+            }
+            if (right > 3)
+            {
+                right = 0;
+                menu_right();
+            }
+            if (more > 3)
+            {
+                more = 0;
+                menu_increase(1);
+            }
+            if (less > 3)
+            {
+
+
+                less = 0;
+                menu_increase(-1);
+            }
         }
         rc_updated_flag = 0;
     }
 
+}
+
+void update_pid_on_screen()
+{
+    copy_to_buffer(confP[current_pid_item], &menuBuffer[30 + 7], 3, AS_INTEGER);
+    copy_to_buffer(confI[current_pid_item], &menuBuffer[40 + 7], 3, AS_INTEGER);
+    copy_to_buffer(confD[current_pid_item], &menuBuffer[50 + 7], 3, AS_INTEGER);
+    //copy_to_buffer(current_pid_item, &menuBuffer[50 + 7], 3, AS_INTEGER);
 }
 
 void go_to_menu(char menu)
@@ -231,6 +336,7 @@ void go_to_menu(char menu)
     switch (current_menu)
     {
     case (INTRO_MENU):
+        printing_numbers = 0;
         strcpy_P((char *)menuBuffer, (PGM_P)menu_intro);
         for (int i = 0; i < 90; i++)
         {
@@ -239,33 +345,27 @@ void go_to_menu(char menu)
         break;
 
 
-
-
     case (PID_MENU):
-        customMessage = MSP_PID;
+        //customMessage = MSP_PID;
         printing_numbers = 1;
-        for (int i = 0; i < 10; i++)
-        {
-            char current_pos = i * 10;
-            strcpy_P((char *)menuBuffer + current_pos, (PGM_P)pid_items[i]);
-            menuBuffer[6 + current_pos] = pid_showing;
-            copy_to_buffer(confP[i], &menuBuffer[current_pos + 7], 3, AS_INTEGER);
-            menuBuffer[current_pos + 7] = 3;
+        strcpy_P((char *)menuBuffer, (PGM_P)menu_titles[current_menu - 2]);
 
-        }
+        strcpy_P((char *)menuBuffer + 21, (PGM_P)pid_items[current_pid_item]);
+        //strcpy_P((char *)menuBuffer + 12, (PGM_P)pid_items[current_pid_item]);
+        menuBuffer[20] = 29 + 64;
+        menuBuffer[26] = 28 + 64;
+        menuBuffer[30 + 5] = 'P';
+        menuBuffer[40 + 5] = 'I';
+        menuBuffer[50 + 5] = 'D';
+        strcpy_P((char *)menuBuffer + 60, (PGM_P)words[0]);
+        strcpy_P((char *)menuBuffer + 70, (PGM_P)words[1]);
+
         for (int i = 0; i < 90; i++)
         {
             menuBuffer[i] = to_index(menuBuffer[i]);
         }
-        menuBuffer[7] = 3;
 
-        for (int i = 0; i < 10; i++)
-        {
-            char current_pos = i * 10;
-            copy_to_buffer(confP[i], &menuBuffer[current_pos + 7], 3, AS_INTEGER);
-
-        }
-
+        update_pid_on_screen();
 
         break;
 

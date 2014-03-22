@@ -85,7 +85,7 @@ extern uint8_t confI[10];
 extern uint8_t confD[10];
 
 
-extern char customMessage;
+extern unsigned char customMessage;
 extern char* data ;
 extern char data_length ;
 

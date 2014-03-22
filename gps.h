@@ -10,6 +10,7 @@
 void gps();
 void do_multiwii_communication();
 void serialRequest(uint8_t requestMSP, char *payload, char payloadsize);
+void send_msp_set_pid();
 
 
 #endif
