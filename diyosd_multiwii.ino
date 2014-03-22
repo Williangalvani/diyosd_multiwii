@@ -23,6 +23,8 @@
 #include "output.h"
 #include "gps.h"
 #include "menu.h"
+#include "timer.h"
+#include "rssi_bat.h"
 
 #ifndef cbi
 #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
@@ -128,7 +130,7 @@ void setup()
 
 
 
-
+setup_timer();
 
 }
 
