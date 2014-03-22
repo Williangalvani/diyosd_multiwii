@@ -1055,12 +1055,7 @@ void update_data()
         }
         horizon_repeat = horizon_lenght / 8;
         horizon_lenght = horizon_lenght % 8;
-        if (horizon_lenght < 3)
-        {
-            horizon_lenght = 3;
-        }
-        horizon_sprite = (1 << horizon_lenght) - 2;
-
+        horizon_sprite = 0b11111110;
         updatedAtt = 0;
     }
 
