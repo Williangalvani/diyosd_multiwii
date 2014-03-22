@@ -98,7 +98,7 @@ unsigned char menuBuffer[91];
 unsigned char menu_dim[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 // Need an integer when reading large characeters (will exceed 256)
 int buffer2[12] = {12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12};
-int buffer3[15];
+int buffer3[17];
 
 
 //========================================
@@ -153,14 +153,14 @@ void write_speed()
 void print_altitude()
 {
 
-    _delay_loop_1(2);
+    _delay_loop_1(5);
     DimOn;
     for (int i = 0; i < 6; i++)
     {
-        output_big_number_left_part(buffer3[9 + i]);
+        output_big_number_left_part(buffer3[10 + i]);
         delay11;
 
-        output_big_number_right_part(buffer3[9 + i]);
+        output_big_number_right_part(buffer3[10 + i]);
         delay4
 
 
@@ -315,7 +315,7 @@ void print_top_large_numbers()
         write_speed();
         buffer2[11] = arrowd << 5;
 
-        _delay_loop_1(8);
+        _delay_loop_1(3);
 
         print_large_4((int *)&buffer3[5]);
 
@@ -559,7 +559,7 @@ void print_menu()
 
 
 
-unsigned char altituder[10] = {1, 1, 1, 1, 1, 1, 1, 1};
+unsigned char altituder[6] ;
 unsigned char losr[] = {1, 1, 1, 1}; // Stores LOS characters (numbers) written to screen
 unsigned char arrowr[] = {3, 3, 3};
 
@@ -594,7 +594,7 @@ void render_top_numbers()
 
     convert_to_big_numbers(losr, &buffer3[5], 3, 5);
 
-    convert_to_big_numbers(altituder, &buffer3[9], 3, 6);
+    convert_to_big_numbers(altituder, &buffer3[10], 3, 6);
 }
 
 void draw_horizon_point_at_line(int line)
@@ -905,7 +905,7 @@ char extract_digit(int number, char char_number)
         extracted_digits[5] = 0;
         last_converted = number;
 
-        while (number > 10)
+        while (number >= 10)
         {
             extracted_digits[i] = number % 10;
             i++;
@@ -967,18 +967,19 @@ void update_data()
 {
     if (updatedAnalog)
     {
-        int curvar = confP[0];
+        int curvar = 0;
         copy_to_buffer(curvar, currentr, 4, AS_DECIMAL);
 
 
-        copy_to_buffer(relativedir, mahr, 4, AS_INTEGER);
+        int rssivar = 0;
+        copy_to_buffer(rssivar, mahr, 4, AS_INTEGER);
         updatedAnalog = 0;
 
     }
     if (updatedVolt)
     {
         //rcData[0] = 1500;
-        int16_t voltvar = rcData[0];
+        int16_t voltvar = vario;
         copy_to_buffer(voltvar, text_buffer_bottom_mid, 4, AS_INTEGER);
         updatedVolt = 0;
     }

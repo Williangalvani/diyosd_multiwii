@@ -201,7 +201,7 @@ void serialMSPCheck()
         los = GPS_distanceToHome = read16();
         int homedir = read16();
         relativedir = homedir - heading - 20 ;
-        if (relativedir < 180)
+        if (relativedir < -180)
         {
             relativedir += 360;
         }
@@ -238,7 +238,7 @@ void serialMSPCheck()
     else if (cmdMSP == MSP_ALTITUDE)
     {
         GPS_altitude = int(read32()) / 10;
-        vario = read16();//vario, discarding
+        vario = read16();
         //powermeter = read16();
         //rssi = read16();
         //mwcurrent = read16();
