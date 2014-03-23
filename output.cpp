@@ -94,7 +94,7 @@ unsigned char buffer[50];
 unsigned char menuBuffer[91];
 unsigned char menu_dim[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 // Need an integer when reading large characeters (will exceed 256)
-int buffer2[12] = {12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12};
+int buffer2[13] = {12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,12};
 int buffer3[17];
 
 
@@ -117,7 +117,7 @@ int horizon_repeat = 0;
 
 
 unsigned char horizonBuffer[90];
-unsigned char speedr[] = {1, 1, 1, 1};
+unsigned char speedr[] = {1, 1, 1, 1,1};
 
 
 int current_letter = 0;
