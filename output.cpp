@@ -5,9 +5,6 @@
 #include "config.h"
 #include "gps.h"
 
-
-
-
 #define True 1
 #define False 0
 
@@ -112,7 +109,7 @@ unsigned char rssir[] = {3, 3, 3};
 
 
 
-unsigned char satellitesr[3] = {3, 3, 3};
+unsigned char satellitesr[3] = {3, 4, 3};
 
 int horizon_lenght = 1;
 char horizon_sprite = 1;
@@ -330,7 +327,7 @@ void print_top_large_numbers()
 void print_bottom_large_numbers()
 {
     // Used to align the text
-    _delay_loop_1(align_text    );
+    _delay_loop_1(align_text - 2    );
 
     screen_line = line - (butlinenumbers + 1);
 
@@ -346,11 +343,11 @@ void print_bottom_large_numbers()
         if (screen_line > 8)
         {
             delay5
-            output_small_letter('C');
+            output_small_letter('T');
             DimOn;
             delay11
 
-            output_small_letter('U');
+            output_small_letter('M');
             delay11
 
             output_small_letter('R');
@@ -362,13 +359,13 @@ void print_bottom_large_numbers()
             delay3
         }
 
-        print_large_4(buffer2);
-        delay15;
+        print_large_5(buffer2);
+        delay5;
         DimOff;
 
 
 
-        _delay_loop_1(6);
+        //_delay_loop_1(1);
         //              ==================================================
 
         if (screen_line > 8)
@@ -390,7 +387,7 @@ void print_bottom_large_numbers()
             delay8
         }
 
-        print_large_4(&buffer2[8]);
+        print_large_4(&buffer2[9]);
 
 
 
@@ -417,7 +414,7 @@ void print_bottom_large_numbers()
             delay1
         }
 
-        print_large_4(&buffer2[4]);
+        print_large_4(&buffer2[5]);
         delay15;
         DimOff;
 
@@ -874,9 +871,9 @@ void render_bottom_numbers()
 {
 
     _delay_loop_1(align_text);
-    convert_to_big_numbers(currentr, buffer2, 3, 4);
-    convert_to_big_numbers(mahr, &buffer2[4], 1, 4);
-    convert_to_big_numbers(text_buffer_bottom_mid, &buffer2[8], 1, 4);
+    convert_to_big_numbers(currentr, buffer2, 4, 5);
+    convert_to_big_numbers(mahr, &buffer2[5], 1, 4);
+    convert_to_big_numbers(text_buffer_bottom_mid, &buffer2[9], 1, 4);
 
     screen_line = (arrowr[0] - 3) * 100 + (arrowr[1] - 3) * 10 + (arrowr[0] - 3);
     _delay_loop_1(align_text);
@@ -965,15 +962,24 @@ int update_counter = 0;
 uint16_t totalmsg = 0;
 void update_data()
 {
-    if (updatedAnalog)
+    if (updatedAnalog || updated_clock)
     {
-        int curvar = 0;
-        copy_to_buffer(curvar, currentr, 4, AS_DECIMAL);
+        if (updated_clock)
+        {
+            int curvar = 0;
+            copy_to_buffer(seconds, currentr + 3, 2, AS_INTEGER);
+            copy_to_buffer(minutes, currentr, 2, AS_INTEGER);
+            currentr[2] = 2;
+            
+        }
 
+        //    int curvar = 0;
+        //    copy_to_buffer(seconds, currentr, 4, AS_DECIMAL);
 
         int rssivar = 0;
         copy_to_buffer(rssivar, mahr, 4, AS_INTEGER);
         updatedAnalog = 0;
+        updated_clock = 0;
 
     }
     if (updatedVolt)
@@ -1178,6 +1184,27 @@ void detectline()
     {
         render_bottom_numbers();
     }
+    else if (line == newframeline)
+    {
+        frame_counter++;
+        if (mode_armed)
+        {
+
+
+            if (frame_counter >= framerate)
+            {
+                updated_clock = 1;
+                frame_counter -= framerate;
+                seconds++;
+                if (seconds >= 60)
+                {
+                    seconds -= 60;
+                    minutes++;
+                }
+            }
+        }
+    }
+
 
     //else if (line >= current_calc_line && line <= current_calc_line+20)
 

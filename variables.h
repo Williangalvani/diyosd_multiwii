@@ -14,6 +14,12 @@
 #define MSP_PID                  112
 #define MSP_SET_PID              202
 
+#ifndef cbi
+#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
+#endif
+#ifndef sbi
+#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+#endif
 
 extern unsigned char text_buffer_bottom_mid[];
 extern long los;           // home distance
@@ -48,6 +54,7 @@ extern char updatedCur;
 extern char updatedSats  ;
 extern char updatedAtt  ;
 extern char updatedAnalog;
+extern char updated_clock;
 extern char pid_reloaded_flag;
 extern char printing_numbers;
 
@@ -88,5 +95,9 @@ extern uint8_t confD[10];
 extern unsigned char customMessage;
 extern char* data ;
 extern char data_length ;
+
+extern int minutes;
+extern int seconds ;
+extern uint8_t frame_counter;
 
 #endif

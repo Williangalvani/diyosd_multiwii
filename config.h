@@ -160,7 +160,9 @@
   #define gpsline 70
   #define modesline 85
   #define summaryline 102
-  #define current_calc_line 292
+  #define newframeline 30
+
+#define framerate 60
 
 
 #define serial_line 220
