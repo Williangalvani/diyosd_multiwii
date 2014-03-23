@@ -606,7 +606,7 @@ void draw_horizon_point_at_line(int line)
         SPDR = pixels;
         _delay_loop_1(align_text);
         int i;
-        for (i = 0; i < 70; i++)
+        for (i = 0; i < 65; i++)
         {
             SPDR = pixels;
             delay5;
