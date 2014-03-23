@@ -223,6 +223,7 @@ void print_large_5(int *buffer)
 {
 
     DimOn;
+    output_big_number_left_part(buffer[0]);
     delay9
 
     output_big_number_right_part(buffer[0]);
