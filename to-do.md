@@ -1,7 +1,6 @@
-## TO-DO
+# TO-DO
 
-# Fixes
-
+## Fixes
 - [ ] Fix dimming ending before some characters
 - [ ] Increase virtual horizon update rate.
 - [ ] Stop counter before the flight controller starts.
@@ -9,7 +8,6 @@
 - [ ] Show instructions in welcome menu.
 - [ ] Show instructions on boot?
 
-# Features
-
+## Features
 - [ ] Mode activation boxes.
 - [ ] High angle indicators in virtual horizon(currently only visible in pitch between -45 and +45 degrees).
