@@ -73,6 +73,7 @@ extern uint8_t mode_osd_switch;
 
 extern uint16_t mwcurrent;
 extern uint16_t rssi;
+extern uint16_t percentrssi;
 extern uint8_t GPS_fix;
 extern int16_t vario;
 

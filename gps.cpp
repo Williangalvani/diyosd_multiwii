@@ -120,6 +120,7 @@ int temp1;
 uint16_t vbat = 0;
 uint16_t powermeter = 0;
 uint16_t rssi = 0;
+uint16_t percentrssi = 0;
 uint16_t mwcurrent = 0;
 int16_t  MwAltitude = 0;                       // This hold barometric value
 int16_t vario = 0;
@@ -231,7 +232,8 @@ void serialMSPCheck()
     {
         vbat = read8();
         powermeter = read16();
-        rssi = read16();
+        //rssi = read16();
+        read16();
         mwcurrent = read16();
         updatedAnalog = 1;
     }

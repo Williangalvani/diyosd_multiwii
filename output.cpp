@@ -32,6 +32,10 @@
 #define output_big_number_right_part(buffer) SPDR = pgm_read_byte_near(&LargeNumbers[buffer + 2 * screen_line + 1]);
 
 
+#define output_big_signal_left_part(buffer) SPDR = pgm_read_byte_near(&charSignalBar[buffer + 2 * screen_line]);
+#define output_big_signal_right_part(buffer) SPDR = pgm_read_byte_near(&charSignalBar[buffer + 2 * screen_line + 1]);
+
+
 
 #define delaybetweenchars 2
 #define delaybetweenwords 3
@@ -94,7 +98,7 @@ unsigned char buffer[50];
 unsigned char menuBuffer[91];
 unsigned char menu_dim[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 // Need an integer when reading large characeters (will exceed 256)
-int buffer2[13] = {12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,12};
+int buffer2[13] = {12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12};
 int buffer3[17];
 
 
@@ -195,13 +199,38 @@ void print_large_4(int *buffer)
         delay11
 
         output_big_number_right_part(buffer[i]);
-       //delay1
+        //delay1
 
     }
     delay10;
     DimOff;
 
 }
+void print_signal_bar(int *buffer)
+{
+
+    DimOn;
+
+    output_big_signal_left_part(buffer[0]);
+    delay11
+    output_big_signal_right_part(buffer[0]);
+    delay1
+    output_big_signal_left_part(buffer[1]);
+    delay11
+    output_big_signal_right_part(buffer[1]);
+    delay1
+    output_big_signal_left_part(buffer[2]);
+    delay11
+    output_big_signal_right_part(buffer[2]);
+    delay1
+    output_big_signal_left_part(buffer[3]);
+    delay11
+    output_big_signal_right_part(buffer[3]);
+    delay4
+    DimOff;
+
+}
+
 
 void print_large_5(int *buffer)
 {
@@ -369,16 +398,17 @@ void print_bottom_large_numbers()
             delay13;
 
             output_small_letter('I');
-            delay11
         }
         else
         {
-            _delay_loop_1(19);
+            _delay_loop_1(16);
             delay1
         }
-
+#ifdef NUMERIC_RSSI
         print_large_4(&buffer2[5]);
-
+#else
+        print_signal_bar(&buffer2[5]);
+#endif
 
     }
 }
@@ -543,6 +573,14 @@ void convert_to_big_numbers(unsigned char *chars, int *buffer_, char min_zeros, 
         buffer_[i] = chars[i] << 5;
     }
 
+}
+
+void convert_to_signal_bar(unsigned char *chars, int *buffer_)
+{
+    for (int i = 0; i < 4; i++)
+    {
+        buffer_[i] = chars[i] << 5;
+    }
 }
 
 
@@ -833,7 +871,11 @@ void render_bottom_numbers()
 
     _delay_loop_1(align_text);
     convert_to_big_numbers(currentr, buffer2, 4, 5);
+#ifdef NUMERIC_RSSI
     convert_to_big_numbers(mahr, &buffer2[5], 1, 4);
+#else
+    convert_to_signal_bar(mahr, &buffer2[5]);
+#endif
     convert_to_big_numbers(text_buffer_bottom_mid, &buffer2[9], 1, 4);
 
     screen_line = (arrowr[0] - 3) * 100 + (arrowr[1] - 3) * 10 + (arrowr[0] - 3);
@@ -911,6 +953,34 @@ void copy_to_buffer(int var, unsigned char *buffera, int digits, int is_decimal)
 }
 
 
+void render_rssi()
+{
+#ifdef NUMERIC_RSSI
+    int rssivar = percentrssi;
+    copy_to_buffer(rssivar, mahr, 4, AS_INTEGER);
+#else
+    mahr[0] = 0;
+    mahr[1] = 0;
+    mahr[2] = 0;
+    mahr[3] = 0;
+    if (percentrssi > 10)
+    {
+        mahr[0] = 1;
+        if (percentrssi > 30)
+        {
+            mahr[1] = 2;
+            if (percentrssi > 70)
+            {
+                mahr[2] = 3;
+                if (percentrssi > 100)
+                {
+                    mahr[3] = 4;
+                }
+            }
+        }
+    }
+#endif
+}
 
 void print_horizon()
 {
@@ -937,8 +1007,7 @@ void update_data()
         //    int curvar = 0;
         //    copy_to_buffer(seconds, currentr, 4, AS_DECIMAL);
 
-        int rssivar = 0;
-        copy_to_buffer(rssivar, mahr, 4, AS_INTEGER);
+        render_rssi();
         updatedAnalog = 0;
         updated_clock = 0;
 
@@ -977,6 +1046,7 @@ void update_data()
     }
     if (updatedAtt)
     {
+        render_rssi();
         /*
            we are working with inverted axes here, to fuck up my brain
            */
