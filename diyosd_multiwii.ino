@@ -1,5 +1,5 @@
 
-// Depeloped by Willian GAavani - 2014
+// Depeloped by Willian Galvani - 2014
 // Contact: williangalvani@gmail.com
 
 

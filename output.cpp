@@ -117,7 +117,7 @@ int horizon_repeat = 0;
 
 
 unsigned char horizonBuffer[90];
-unsigned char speedr[] = {1, 1, 1, 1,1};
+unsigned char speedr[] = {1, 1, 1, 1, 1};
 
 
 int current_letter = 0;
@@ -132,10 +132,10 @@ void draw_arrow()
 {
     SPDR = pgm_read_byte_near(&HomeArrow[buffer2[11] + 2 * screen_line]);
     DimOn;
-    delay13
+    delay11
 
     SPDR = pgm_read_byte_near(&HomeArrow[buffer2[11] + 2 * screen_line + 1]);
-    delay5;
+    delay13;
     DimOff;
 
 }
@@ -150,7 +150,7 @@ void write_speed()
 void print_altitude()
 {
 
-    _delay_loop_1(5);
+    _delay_loop_1(1);
     DimOn;
     for (int i = 0; i < 6; i++)
     {
@@ -168,91 +168,54 @@ void print_altitude()
 
 void print_large_3(int *buffer)
 {
-
-    output_big_number_left_part(buffer[0]);
     DimOn;
-    delay9
-    output_big_number_right_part(buffer[0]);
-    delay4
+    for (int i = 0; i < 3; i++)
+    {
+        output_big_number_left_part(buffer[i]);
 
-    output_big_number_left_part(buffer[1]);
-    delay11;
+        delay11
 
-    output_big_number_right_part(buffer[1]);
-    delay4
+        output_big_number_right_part(buffer[i]);
+        //delay1
 
-    output_big_number_left_part(buffer[2]);
-    delay11;
-
-    output_big_number_right_part(buffer[2]);
+    }
+    DimOff;
 }
 
 void print_large_4(int *buffer)
 {
 
-    output_big_number_left_part(buffer[0]);
     DimOn;
-    delay9
+    for (int i = 0; i < 4; i++)
+    {
+        output_big_number_left_part(buffer[i]);
 
-    output_big_number_right_part(buffer[0]);
-    delay4
+        delay11
 
+        output_big_number_right_part(buffer[i]);
+       //delay1
 
-    output_big_number_left_part(buffer[1]);
-    delay11;
-
-    output_big_number_right_part(buffer[1]);
-    delay4;
-
-
-    output_big_number_left_part(buffer[2]);
-    delay11;
-
-    output_big_number_right_part(buffer[2]);
-    delay4
-
-    output_big_number_left_part(buffer[3]);
-    delay11;
-
-    output_big_number_right_part(buffer[3]);
-    delay1;
+    }
     DimOff;
+
 }
 
 void print_large_5(int *buffer)
 {
 
     DimOn;
-    output_big_number_left_part(buffer[0]);
-    delay9
+    for (int i = 0; i < 5; i++)
+    {
+        output_big_number_left_part(buffer[i]);
 
-    output_big_number_right_part(buffer[0]);
-    delay4
+        delay11
 
-    output_big_number_left_part(buffer[1]);
-    delay11;
+        output_big_number_right_part(buffer[i]);
+        //delay1
 
-    output_big_number_right_part(buffer[1]);
-    delay4;
-
-    output_big_number_left_part(buffer[2]);
-    delay11;
-
-    output_big_number_right_part(buffer[2]);
-    delay6
-
-    output_big_number_left_part(buffer[3]);
-    delay12;
-
-    output_big_number_right_part(buffer[3]);
-    delay6;
-
-    output_big_number_left_part(buffer[4]);
-    delay13;
-
-    output_big_number_right_part(buffer[4]);
-    delay3;
+    }
     DimOff;
+
 }
 
 
@@ -361,9 +324,6 @@ void print_bottom_large_numbers()
         }
 
         print_large_5(buffer2);
-        delay5;
-        DimOff;
-
 
 
         //_delay_loop_1(1);
@@ -371,7 +331,7 @@ void print_bottom_large_numbers()
 
         if (screen_line > 8)
         {
-            delay5
+            delay2
             output_small_letter('V');
             DimOn;
             delay10
@@ -385,7 +345,7 @@ void print_bottom_large_numbers()
         else
         {
             _delay_loop_1(16);
-            delay8
+            delay5
         }
 
         print_large_4(&buffer2[9]);
@@ -395,7 +355,7 @@ void print_bottom_large_numbers()
         // ======================================================
 
 
-        _delay_loop_1(2);
+        _delay_loop_1(1);
 
         if (screen_line > 7)
         {
@@ -416,8 +376,6 @@ void print_bottom_large_numbers()
         }
 
         print_large_4(&buffer2[5]);
-        delay15;
-        DimOff;
 
 
     }
@@ -971,7 +929,7 @@ void update_data()
             copy_to_buffer(seconds, currentr + 3, 2, AS_INTEGER);
             copy_to_buffer(minutes, currentr, 2, AS_INTEGER);
             currentr[2] = 2;
-            
+
         }
 
         //    int curvar = 0;
