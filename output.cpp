@@ -162,6 +162,7 @@ void print_altitude()
 
 
     }
+    delay10;
     DimOff;
 
 }
@@ -179,6 +180,7 @@ void print_large_3(int *buffer)
         //delay1
 
     }
+    delay10;
     DimOff;
 }
 
@@ -196,6 +198,7 @@ void print_large_4(int *buffer)
        //delay1
 
     }
+    delay10;
     DimOff;
 
 }
@@ -214,6 +217,7 @@ void print_large_5(int *buffer)
         //delay1
 
     }
+    delay10;
     DimOff;
 
 }
@@ -279,8 +283,6 @@ void print_top_large_numbers()
         _delay_loop_1(3);
 
         print_large_4((int *)&buffer3[5]);
-
-        _delay_loop_1(1);
 
         draw_arrow();
 
