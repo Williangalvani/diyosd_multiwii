@@ -38,7 +38,6 @@ extern int line;
 #define baud 115200
 
 
-
 int minutes = 0;
 int seconds  = 0;
 
@@ -85,17 +84,10 @@ void setup()
     // It will always idle at the last bit sent, so always be sure the last bit is 0. The main-loop and end of each line will always send 8 zeros - so it should
     // be pretty safe.
 
-    // Analog read enable and set prescale. You can change prescale if you like.
-    ADCSRA = (1 << ADEN) | (1 << ADPS2) | (0 << ADPS1) | (1 << ADPS0);
-
     // Disable standard Arduino interrupts used for timer etc. (you can clearly see the text flicker if they are not disabled)
     TIMSK0 = 0;
     TIMSK1 = 0;
     TIMSK2 = 0;
-
-
-
-
 
     // If Arduino is used
     if (CONTROLLER == 0)
@@ -118,8 +110,7 @@ void setup()
         // Button with internal pull-up.
         pinMode(Buttonpin_, INPUT);
         digitalWrite(Buttonpin_, HIGH);
-    }
-
+    }   
     // If SimpleOSD/LM1881
     if (CONTROLLER == 1)
     {
@@ -132,11 +123,7 @@ void setup()
         pinMode(6, INPUT);
         digitalWrite(6, HIGH);
     }
-
-
 initADC();
-
-
 }
 
 
@@ -160,12 +147,8 @@ ISR(ANALOG_COMP_vect)
     if (TCNT2 > 75)
     {
         line = 0;
-
-
     }
-    //cbi(UCSR0B,RXCIE0);
     detectline();
-    //sbi(UCSR0B,RXCIE0);
 }
 
 
@@ -174,17 +157,15 @@ ISR(ANALOG_COMP_vect)
 // ====================================================================================================================================================================================================================
 // ====================================================================================================================================================================================================================
 
-
-
 void loop()
 {
     while (1 == 1)
-    {
+    {  
+        // this is the communication and menu logic
         do_multiwii_communication();
         process_menu();
         update_analog();
     }
-
 }
 
 

@@ -4,10 +4,13 @@
 #include "output.h"
 #include "config.h"
 #include "gps.h"
+#include "Arduino.h"
+#include "Math.h"
+#include <avr/delay.h>
+#include <avr/pgmspace.h>
 
 #define True 1
 #define False 0
-
 
 #define AS_DECIMAL 1
 #define AS_INTEGER 0
@@ -16,8 +19,6 @@
 #define FOUR_CHARS 4
 #define FIVE_CHARS 5
 
-//#define output_small_letter(letter) SPDR = letters[((letter - 64) << 3) + (screen_line - 8)];
-//#define output_small_byte(byte) SPDR = letters[byte + (screen_line)];
 #define output_small_letter(letter) SPDR = pgm_read_byte_near(&letters[((letter - 64) << 3) + (screen_line - 8)]);
 #define output_small_byte(byte) SPDR = pgm_read_byte_near(&letters[byte + (screen_line)]);
 #define output_small_byte_line(byte, aline) SPDR = pgm_read_byte_near(&letters[byte + (aline)]);
@@ -25,17 +26,11 @@
 #define output_small_number_line(number,aline) SPDR = pgm_read_byte_near(&numbers[(number) + (aline)]);
 #define to_index(ch) (ch - 64) << 3;
 
-//#define output_big_number_left_part(buffer) SPDR = LargeNumbers[buffer + 2 * screen_line];
-//#define output_big_number_right_part(buffer) SPDR = LargeNumbers[buffer + 2 * screen_line + 1];
-
 #define output_big_number_left_part(buffer) SPDR = pgm_read_byte_near(&LargeNumbers[buffer + 2 * screen_line]);
 #define output_big_number_right_part(buffer) SPDR = pgm_read_byte_near(&LargeNumbers[buffer + 2 * screen_line + 1]);
 
-
 #define output_big_signal_left_part(buffer) SPDR = pgm_read_byte_near(&charSignalBar[buffer + 2 * screen_line]);
 #define output_big_signal_right_part(buffer) SPDR = pgm_read_byte_near(&charSignalBar[buffer + 2 * screen_line + 1]);
-
-
 
 #define delaybetweenchars 2
 #define delaybetweenwords 3
@@ -44,12 +39,13 @@
 
 #define wait_before_next_char() delay4;
 
-//extern uint16_t frame_counter = 0;
 
-unsigned char customMessage = 0;
+// serial protocol
+unsigned char customMessage = 0; // used when asking for a specific message, like settings pids
 char *data;
 char data_length = 0;
 
+// text on top of the screen
 unsigned char toptext[12] = {'S' - 64, 'P' - 64, 'E' - 64, 'E' - 64, 'D' - 64, 'L' - 64, 'O' - 64, 'S' - 64, 'A' - 64, 'L' - 64, 'T' - 64, 20};
 
 // Linenumber
@@ -60,78 +56,58 @@ int screen_line = 0;
 int a = 0;
 int i = 0;
 int k = 0;
-
 unsigned char ii = 0;
 
 
-#include "Arduino.h"
-#include "Math.h"
-#include <avr/delay.h>
-#include <avr/pgmspace.h>
 
-//========================================
-// Data for mAh
-//========================================
-// Measuring amps and mah's;
+///some valued from multiwii
 int current = 0;
-
-unsigned char currentr[] = {3, 3, 3, 3, 3}; // Stores current characters (numbers) written to screen
-unsigned char text_buffer_bottom_mid[] = {3, 3, 3, 3, 3}; // Stores current characters (numbers) written to screen
 int bat_volt = 0;
-
-long mah = 0;
-long mahtemp = 0;
-unsigned char mahr[] = {3, 3, 3, 3, 3, 3}; // Stores mah characters (numbers) written to screen
-
-
-//ADC (It's a 10 bit ADC, so we need to read from 2 registers and put them together. This is what ADSCtemp is used for
-int ADCtemp = 0;
-int ADCtemp2 = 0;
-int ADCreal = 0; // Just a stupid name for the complete analog-read
-int ADCreal2 = 0; // Can be replaced with ADCreal
-
 
 //========================================
 // Buffers
 //========================================
-unsigned char buffer[50];
-unsigned char menuBuffer[91];
+unsigned char buffer[50];      //generak purpose
+unsigned char menuBuffer[91];  // menu only
 unsigned char menu_dim[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 // Need an integer when reading large characeters (will exceed 256)
 int buffer2[13] = {12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12};
-int buffer3[17];
+int buffer3[17]; // big numbers
 
 
 //========================================
 // Mixed
 //========================================
 
-unsigned int mahkm_buf[5];
-unsigned char showcoordinates = 1;
+// numbers converted to array index  (3 = 0)
 unsigned char rssir[] = {3, 3, 3};
-
-
-
-
 unsigned char satellitesr[3] = {3, 4, 3};
+unsigned char speedr[] = {1, 1, 1, 1, 1};
+unsigned char currentr[] = {3, 3, 3, 3, 3};
+unsigned char altituder[6] ;
+unsigned char losr[] = {1, 1, 1, 1}; // Stores LOS characters (numbers) written to screen
+unsigned char arrowr[] = {3, 3, 3};
+unsigned char mahr[] = {3, 3, 3, 3, 3, 3}; // Stores mah characters (numbers) written to screen
+unsigned char batvoltr[] = {3, 3, 3, 3, 3}; // Stores current characters (numbers) written to screen
 
+// used on virtual horizon rendering
 int horizon_lenght = 1;
 char horizon_sprite = 1;
 int horizon_repeat = 0;
 
-
+// horizon buffer is actually the first x point in every line, to save space
 unsigned char horizonBuffer[90];
-unsigned char speedr[] = {1, 1, 1, 1, 1};
 
-
-int current_letter = 0;
-unsigned char charcounter;
-char printing_numbers = 0;
 
 void print_large_3(int *buffer);
 void print_large_5(int *buffer);
 void serialMSPCheck();
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////// PRINTING ////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void draw_arrow()
 {
     SPDR = pgm_read_byte_near(&HomeArrow[buffer2[11] + 2 * screen_line]);
@@ -141,7 +117,6 @@ void draw_arrow()
     SPDR = pgm_read_byte_near(&HomeArrow[buffer2[11] + 2 * screen_line + 1]);
     delay13;
     DimOff;
-
 }
 
 void write_speed()
@@ -153,22 +128,17 @@ void write_speed()
 
 void print_altitude()
 {
-
     _delay_loop_1(1);
     DimOn;
     for (int i = 0; i < 6; i++)
     {
         output_big_number_left_part(buffer3[10 + i]);
         delay11;
-
         output_big_number_right_part(buffer3[10 + i]);
         delay4
-
-
     }
     delay10;
     DimOff;
-
 }
 
 void print_large_3(int *buffer)
@@ -177,12 +147,8 @@ void print_large_3(int *buffer)
     for (int i = 0; i < 3; i++)
     {
         output_big_number_left_part(buffer[i]);
-
         delay11
-
         output_big_number_right_part(buffer[i]);
-        //delay1
-
     }
     delay10;
     DimOff;
@@ -195,22 +161,16 @@ void print_large_4(int *buffer)
     for (int i = 0; i < 4; i++)
     {
         output_big_number_left_part(buffer[i]);
-
         delay11
-
         output_big_number_right_part(buffer[i]);
-        //delay1
-
     }
     delay10;
     DimOff;
-
 }
+
 void print_signal_bar(int *buffer)
 {
-
     DimOn;
-
     output_big_signal_left_part(buffer[0]);
     delay11
     output_big_signal_right_part(buffer[0]);
@@ -228,27 +188,21 @@ void print_signal_bar(int *buffer)
     output_big_signal_right_part(buffer[3]);
     delay4
     DimOff;
-
 }
 
 
 void print_large_5(int *buffer)
 {
-
     DimOn;
     for (int i = 0; i < 5; i++)
     {
         output_big_number_left_part(buffer[i]);
-
         delay11
-
         output_big_number_right_part(buffer[i]);
         //delay1
-
     }
     delay10;
     DimOff;
-
 }
 
 
@@ -276,45 +230,31 @@ void print_small_5(unsigned char *buffer)
 
 void print_small_3(unsigned char *buffer)
 {
-
     output_small_byte(buffer[0]);
     DimOn;
     delay12
-
     output_small_byte(buffer[1]);
     delay13
-
     output_small_byte(buffer[2]);
     delay13
     DimOff;
-
 }
-
 
 void print_top_large_numbers()
 {
     _delay_loop_1(align_text - 5);
-    //_delay_loop_1(1);
-
     screen_line = line - (toplinenumbers + 1);
-
     if (line == toplinenumbers + 1)
     {
-
     }
     else
     {
-
         _delay_loop_1(3);
         write_speed();
         buffer2[11] = arrowd << 5;
-
         _delay_loop_1(3);
-
         print_large_4((int *)&buffer3[5]);
-
         draw_arrow();
-
         print_altitude();
     }
 }
@@ -323,18 +263,13 @@ void print_bottom_large_numbers()
 {
     // Used to align the text
     _delay_loop_1(align_text - 2    );
-
     screen_line = line - (butlinenumbers + 1);
-
-
     if (line == butlinenumbers + 1)
     {
-
 
     }
     else
     {
-        //     _delay_loop_1(3);
         if (screen_line > 8)
         {
             delay5
@@ -353,13 +288,7 @@ void print_bottom_large_numbers()
             _delay_loop_1(16);
             delay3
         }
-
         print_large_5(buffer2);
-
-
-        //_delay_loop_1(1);
-        //              ==================================================
-
         if (screen_line > 8)
         {
             delay2
@@ -378,14 +307,7 @@ void print_bottom_large_numbers()
             _delay_loop_1(16);
             delay5
         }
-
         print_large_4(&buffer2[9]);
-
-
-
-        // ======================================================
-
-
         _delay_loop_1(1);
 
         if (screen_line > 7)
@@ -429,10 +351,7 @@ void print_top_text()
     buffer[2] = (toptext[2]) << 3;
     buffer[3] = (toptext[3]) << 3;
     buffer[4] = (toptext[4]) << 3;
-
-
     print_small_5(buffer);
-
 
     // Writes LOS (The delay loop is used to place the LOS in the middle)
     _delay_loop_1(55);
@@ -453,41 +372,16 @@ void print_top_text()
     print_small_3(buffer);
 }
 
-void detectframe()
-{
-    line = 0;
-    //      frame++;
-}
-
-
-
-void clear_menu()
-{
-    for (int i = 0; i < 91; i++)
-    {
-        menuBuffer[i] = to_index(' ') ;
-    }
-}
 
 void print_menu()
 {
     int ij;
     screen_line = line - (summaryline + 1);
-
     _delay_loop_1(5);
-
-    //_delay_loop_1(65);
-
-
-
-
     for (int i = 0; i < 10; i++)
     {
-
         if (screen_line > i * 10 && screen_line < i * 10 + 9 )
         {
-
-
             if (printing_numbers)
             {
                 _delay_loop_1(100 - 10 * i);
@@ -495,7 +389,6 @@ void print_menu()
                 {
                     DimOn;
                 }
-
                 ij = 10 * i;
                 uint8_t counter = screen_line - 10 * i;
 
@@ -523,7 +416,6 @@ void print_menu()
                     _delay_loop_1(2);
                 }
                 DimOff;
-
             }
             else
             {
@@ -537,25 +429,33 @@ void print_menu()
                 }
                 DimOff;
             }
-
-
         }
     }
+}
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void detectframe()
+{
+    line = 0;
 }
 
 
 
-unsigned char altituder[6] ;
-unsigned char losr[] = {1, 1, 1, 1}; // Stores LOS characters (numbers) written to screen
-unsigned char arrowr[] = {3, 3, 3};
-
+void clear_menu()
+{
+    for (int i = 0; i < 91; i++)
+    {
+        menuBuffer[i] = to_index(' ') ;
+    }
+}
 
 
 void convert_to_big_numbers(unsigned char *chars, int *buffer_, char min_zeros, char digits)
 {
-
     int i = 0;
     for (i = 0; i < (digits - min_zeros); i++)
     {
@@ -575,7 +475,7 @@ void convert_to_big_numbers(unsigned char *chars, int *buffer_, char min_zeros, 
 
 }
 
-void convert_to_signal_bar(unsigned char *chars, int *buffer_)
+void convert_number_to_signal_bar_indexes(unsigned char *chars, int *buffer_)
 {
     for (int i = 0; i < 4; i++)
     {
@@ -584,7 +484,7 @@ void convert_to_signal_bar(unsigned char *chars, int *buffer_)
 }
 
 
-void render_top_numbers()
+void convert_top_numbers_to_array_indexes()
 {
     convert_to_big_numbers(speedr, buffer3, 3, 5);
 
@@ -728,10 +628,6 @@ void print_gps_sats()
 }
 
 
-
-
-
-
 void print_modes_sats()
 {
     screen_line = line - (modesline + 1);
@@ -779,7 +675,6 @@ void print_modes_sats()
         buffer[37] = to_index('O');
         buffer[38] = to_index('L');
         buffer[39] = to_index('D');
-
     }
     else
     {
@@ -874,9 +769,9 @@ void render_bottom_numbers()
 #ifdef NUMERIC_RSSI
     convert_to_big_numbers(mahr, &buffer2[5], 1, 4);
 #else
-    convert_to_signal_bar(mahr, &buffer2[5]);
+    convert_number_to_signal_bar_indexes(mahr, &buffer2[5]);
 #endif
-    convert_to_big_numbers(text_buffer_bottom_mid, &buffer2[9], 1, 4);
+    convert_to_big_numbers(batvoltr, &buffer2[9], 1, 4);
 
     screen_line = (arrowr[0] - 3) * 100 + (arrowr[1] - 3) * 10 + (arrowr[0] - 3);
     _delay_loop_1(align_text);
@@ -1016,7 +911,7 @@ void update_data()
     {
         //rcData[0] = 1500;
         int16_t voltvar = vario;
-        copy_to_buffer(voltvar, text_buffer_bottom_mid, 4, AS_INTEGER);
+        copy_to_buffer(voltvar, batvoltr, 4, AS_INTEGER);
         updatedVolt = 0;
     }
     if (updatedSats)
@@ -1206,7 +1101,7 @@ void detectline()
     }
     else if (line == toplinenumbers)
     {
-        render_top_numbers();
+        convert_top_numbers_to_array_indexes();
     }    // ============================================================
     // Buttom line text
     // ============================================================

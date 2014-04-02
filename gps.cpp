@@ -272,22 +272,6 @@ void serialMSPCheck()
 
 
     }
-
-    /*  byteP[i] = read8(); byteI[i] = read8(); byteD[i] = read8();
-    switch (i)
-    {
-    case 0: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
-    case 1: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
-    case 2: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
-    case 3: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
-    case 7: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
-    case 8: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
-    case 9: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 1000.0); confD[i] = (byteD[i]); break;
-    //Different rates fot POS-4 POSR-5 NAVR-6
-    case 4: confP[i] = (byteP[i] / 100.0); confI[i] = (byteI[i] / 100.0); confD[i] = (byteD[i] / 1000.0); break;
-    case 5: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 100.0); confD[i] = (byteD[i] / 1000.0); break;
-    case 6: confP[i] = (byteP[i] / 10.0); confI[i] = (byteI[i] / 100.0); confD[i] = (byteD[i] / 1000.0); break;
-    }*/
     else if (cmdMSP == MSP_PID)
     {
 
