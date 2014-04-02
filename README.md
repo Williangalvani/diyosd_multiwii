@@ -3,7 +3,7 @@ diyosd_multiwii
 
 This is a diyosd port for communication with multiwii board
 
-Depeloped by Willian GAavani - 2014
+Depeloped by Willian Galvani - 2014
 Contact: williangalvani@gmail.com
 
 Based on work by Dennis Frie - 2011
