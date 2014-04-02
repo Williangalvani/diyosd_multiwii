@@ -21,3 +21,5 @@ The original Project is available at the thread: http://www.rcgroups.com/forums/
 (to-do) - A7105 rssi reading.
 (to-do) - Timer.
  
+A video(not latest version) can be seen here:
+http://youtu.be/Wm6F-CecYk8
