@@ -16,9 +16,11 @@ The original Project is available at the thread: http://www.rcgroups.com/forums/
 - Lots of features from the original were removed, for different reasons
 - An artificial horizon.
 - A menu for pid tuning;
+- A7105 rssi reading(compatible with hk-t6a and t9x receivers);
+
 (to-do) - A menu for mode configuration.
 (to-do) - Reading of analog voltages.
-(to-do) - A7105 rssi reading.
+- A7105 rssi reading.
 (to-do) - Timer.
  
 A video(not latest version) can be seen here:
