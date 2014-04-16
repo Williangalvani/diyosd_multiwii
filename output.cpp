@@ -58,6 +58,7 @@ int i = 0;
 int k = 0;
 unsigned char ii = 0;
 
+char printing_numbers = 0;
 
 
 ///some valued from multiwii
@@ -296,10 +297,10 @@ void print_bottom_large_numbers()
             DimOn;
             delay10
 
-            output_small_letter('A');
+            output_small_letter('O');
             delay11
 
-            output_small_letter('R');
+            output_small_letter('L');
             delay5
         }
         else
@@ -910,8 +911,8 @@ void update_data()
     if (updatedVolt)
     {
         //rcData[0] = 1500;
-        int16_t voltvar = vario;
-        copy_to_buffer(voltvar, batvoltr, 4, AS_INTEGER);
+        int16_t voltvar = vbat;
+        copy_to_buffer(voltvar, batvoltr, 4, AS_DECIMAL);
         updatedVolt = 0;
     }
     if (updatedSats)

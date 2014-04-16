@@ -44,7 +44,7 @@ extern unsigned char text_buffer_bottom_mid[];
 extern int success;
 extern unsigned int GPS_speed;
 extern int32_t GPS_altitude;
-
+extern uint16_t vbat;
 extern char updatedSpeed ;
 //extern int updatedArrow;
 extern char updatedAlt;
